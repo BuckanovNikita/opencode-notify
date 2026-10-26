@@ -105,3 +105,29 @@ The parent accepted the regression-verified correction pass under the selected
 workflow. The independent reviewer did not issue a second verdict. The architecture
 record refers to this review and correction evidence without representing the
 initial fix-first verdict as an unconditional approval.
+
+## Publication
+
+Published [v0.2.0](https://github.com/BuckanovNikita/opencode-notify/releases/tag/v0.2.0)
+from annotated tag `v0.2.0` at source commit
+`feae0fa45bdecfa14fb3df6d4244b7594ca8284a` on 2026-10-26 at 14:09 UTC.
+Both [CI](https://github.com/BuckanovNikita/opencode-notify/actions/runs/40336802106)
+and the [release workflow](https://github.com/BuckanovNikita/opencode-notify/actions/runs/40336807496)
+passed on that exact commit, including unit/import/documentation checks, production
+audit, packaging, real OpenCode and five installed-extension profiles. The normal
+tag workflow published the assets; no manual publication fallback was needed.
+
+Downloaded both released VSIXs and SHA256SUMS. `sha256sum -c SHA256SUMS` passed.
+The Router nested in the downloaded presenter is byte-for-byte identical to the
+downloaded standalone Router. Both manifests report 0.2.0 and the Router includes
+its standalone plugin and CLI. The release is neither draft nor prerelease.
+
+| Asset | SHA256 |
+| --- | --- |
+| `opencode-notify-0.2.0.vsix` | `c8b7208d9fd323c94d8fefa4551b3530938d373ad8c7b28db8796c3610184162` |
+| `opencode-notify-router-0.2.0.vsix` | `8a7e6b0c76164b1587138fb61c7c2ff3743e437572b6fc4a73fcd15af022e8fd` |
+
+The source checkout and release artifacts are delivered. Installation into the
+user's live VS Code profile was not requested and was not performed. No npm or
+Marketplace publication occurred. Temporary test profiles/processes were cleaned
+up; pre-existing applications and configurations were preserved.

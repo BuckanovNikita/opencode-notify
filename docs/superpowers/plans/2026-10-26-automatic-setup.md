@@ -37,7 +37,7 @@ through the existing release workflow without further stage prompts.
   synchronize 0.2.0 manifests and lockfiles. Run `npm run check`,
   `npm audit --omit=dev`, `npm run package`, `npm run test:native` and
   `xvfb-run -a npm run test:extension`; inspect nested VSIX contents/checksums.
-- [ ] T5: Record dated evidence, obtain fresh independent review, resolve findings,
+- [x] T5: Record dated evidence, obtain fresh independent review, resolve findings,
   reconcile the complete diff and validate architecture acceptance. Re-read the
   commit procedure, commit, tag/push and verify authorized VSIX release assets.
 
@@ -53,6 +53,10 @@ through the existing release workflow without further stage prompts.
 
 See [dated verification](../../verification-2026-10-26-automatic-setup.md) for failed-first tests,
 46 passing tests, five real extension profiles, native OpenCode, independent review
-and corrected findings. Architecture acceptance and release are the remaining
-completion steps. The selected correction workflow uses parent regression
+and corrected findings. Architecture acceptance passed. The selected correction workflow uses parent regression
 verification after one independent review, not a second review verdict.
+
+Published annotated `v0.2.0` at `feae0fa45bdecfa14fb3df6d4244b7594ca8284a` through
+the successful release workflow. Downloaded assets passed checksum validation and
+nested Router identity checks. All tasks are complete; actual remote-platform
+placement and visible OS notifications retain their documented verification limits.
