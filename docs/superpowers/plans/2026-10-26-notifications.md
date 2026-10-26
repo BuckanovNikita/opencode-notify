@@ -52,7 +52,7 @@ needed for the already requested behavior and delivery.
   final archive content and record dated evidence and limitations.
 - [x] T6: Obtain fresh independent review, resolve blockers, reconcile complete
   task scope and architecture acceptance, and make a Conventional Commit.
-- [ ] T7: Create/use authorized GitHub destination, push commit and annotated tag,
+- [x] T7: Create/use authorized GitHub destination, push commit and annotated tag,
   publish release with both VSIX assets, and verify their remote metadata/checksums.
 
 ## Progress and decisions
@@ -68,3 +68,9 @@ needed for the already requested behavior and delivery.
 - Final correction checks passed 32 tests and both real-process smoke tests. Fresh
   independent acceptance review returned ship; architecture and full task scope
   reconciled. Release publication is the remaining task.
+
+- Published private repository and annotated `v0.1.0` tag. GitHub CI passed on the
+  release commit; its two VSIXs and checksums were published and downloaded for
+  byte-for-byte verification. Initial tag workflow did not start, so the equivalent
+  verified CI-artifact publication path was used without moving the tag. All tasks
+  are complete; dated verification records the details and platform limitations.

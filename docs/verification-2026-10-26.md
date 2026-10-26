@@ -66,4 +66,26 @@ The full suite, packaging and both real-process smoke checks passed after fixes.
 
 The first independent review requested fixes; resolution is recorded in
 [review evidence](review-2026-10-26.md). Fresh acceptance review returned **ship** after all
-corrections. Remote release verification remains pending.
+corrections.
+
+Published [v0.1.0](https://github.com/BuckanovNikita/opencode-notify/releases/tag/v0.1.0)
+in the private repository from annotated tag commit
+`ed5e607940e7c399b57b5e3955c60e422242c9ad`.
+[GitHub CI run 40328082570](https://github.com/BuckanovNikita/opencode-notify/actions/runs/40328082570)
+passed typing, all tests, import/documentation checks, production audit, packaging,
+native OpenCode smoke and installed-extension smoke on that exact commit.
+
+The release-tag workflow did not start on the initial combined branch/tag push.
+The parent therefore downloaded the successful CI run's `vsix` artifact, verified
+its source commit and SHA256SUMS, and published those exact files with `gh release
+create --verify-tag`. No tag was moved and no package was published to a registry.
+The uploaded assets were downloaded again and matched the CI files byte for byte:
+
+| Asset | SHA-256 |
+| --- | --- |
+| `opencode-notify-0.1.0.vsix` | `66f2447dde9f1b4e1fae97dc066de5261d8b2982e1bdbbe246fb1d9399f856dc` |
+| `opencode-notify-router-0.1.0.vsix` | `07d6436e930e1ce293abb39db361624f6fe16a8811e58393fb1ee03342b6600a` |
+
+The release also contains SHA256SUMS and is neither a draft nor a prerelease.
+The following documentation-only commit records publication; runtime source and
+package versions remain identical to the release tag.

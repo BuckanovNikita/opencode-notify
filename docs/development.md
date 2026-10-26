@@ -91,5 +91,11 @@ npm or Marketplace publication.
 5. Verify the workflow conclusion and released assets; do not claim publication
    solely because the tag was pushed. A workflow failure is a delivery gap.
 
+If a tag event does not start the release workflow, a manual publication may use
+the `vsix` artifact from a successful CI run of that exact tagged commit. Verify
+the tag/source SHA and artifact checksums, publish with `gh release create
+--verify-tag`, then download and verify the uploaded files. Record the fallback
+and evidence in dated verification; never move an existing release tag to retry.
+
 Release assets are also available locally in `artifacts/`. Do not commit generated
 VSIXs, dependencies, test profiles, credentials or machine-specific configuration.
