@@ -1,0 +1,50 @@
+{
+  "version": "0.1.0",
+  "publisher": "buckanovnikita",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BuckanovNikita/opencode-notify.git"
+  },
+  "main": "./dist/extension.cjs",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Notification routing requires a trusted workspace."
+    },
+    "virtualWorkspaces": false
+  },
+  "name": "opencode-notify-router",
+  "displayName": "OpenCode Notify Router",
+  "description": "Workspace bridge and installer for the OpenCode v1 notification plugin",
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:opencodeNotify.focus"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "opencodeNotify.installPlugin",
+        "title": "OpenCode Notify: Install or Update OpenCode v1 Plugin"
+      },
+      {
+        "command": "opencodeNotify.start",
+        "title": "OpenCode Notify: Start OpenCode"
+      },
+      {
+        "command": "opencodeNotify.test",
+        "title": "OpenCode Notify: Test Connection"
+      }
+    ]
+  },
+  "type": "module"
+}

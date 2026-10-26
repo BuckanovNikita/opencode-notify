@@ -1,0 +1,114 @@
+{
+  "version": "0.1.0",
+  "publisher": "buckanovnikita",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BuckanovNikita/opencode-notify.git"
+  },
+  "main": "./dist/extension.cjs",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Notification routing requires a trusted workspace."
+    },
+    "virtualWorkspaces": false
+  },
+  "name": "opencode-notify",
+  "displayName": "OpenCode Notify",
+  "description": "Local VS Code and OS notifications for OpenCode v1 in SSH, WSL and containers",
+  "extensionKind": [
+    "ui"
+  ],
+  "api": "none",
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:opencodeNotify.deliver"
+  ],
+  "dependencies": {
+    "node-notifier": "10.0.1"
+  },
+  "overrides": {
+    "node-notifier": {
+      "uuid": "11.1.1"
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "opencodeNotify.showLog",
+        "title": "OpenCode Notify: Show Local Log"
+      }
+    ],
+    "configuration": {
+      "title": "OpenCode Notify",
+      "properties": {
+        "opencodeNotify.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Enable local notification presentation."
+        },
+        "opencodeNotify.systemNotifications": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "app",
+            "system"
+          ],
+          "enumDescriptions": [
+            "VS Code while focused, OS while unfocused.",
+            "Always use VS Code notifications.",
+            "Attempt OS notifications, with VS Code fallback."
+          ],
+          "default": "auto",
+          "scope": "window",
+          "description": "Choose where notifications appear."
+        },
+        "opencodeNotify.sound": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Request a sound with OS notifications; desktop support varies."
+        },
+        "opencodeNotify.events.complete": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Display complete events sent by the plugin."
+        },
+        "opencodeNotify.events.question": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Display question events sent by the plugin."
+        },
+        "opencodeNotify.events.permission": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Display permission events sent by the plugin."
+        },
+        "opencodeNotify.events.error": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Display error events sent by the plugin."
+        },
+        "opencodeNotify.events.subagent_complete": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Display subagent complete events sent by the plugin."
+        }
+      }
+    }
+  },
+  "type": "module"
+}

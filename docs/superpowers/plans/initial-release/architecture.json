@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "task": "Initial notification release",
+  "scope": [
+    "packages",
+    "scripts",
+    "tests",
+    "docs",
+    "AGENTS.md",
+    "README.md",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    ".github",
+    ".gitignore",
+    "LICENSE",
+    "CHANGELOG.md",
+    ".markdownlint-cli2.jsonc"
+  ],
+  "impact": "modules",
+  "rules": "Design defines pure protocol and independent outer adapters; production cannot import another adapter or tooling.",
+  "modules": [
+    {
+      "id": "protocol",
+      "path": "packages/protocol",
+      "change": "add",
+      "responsibility": "Validate the shared v1 wire message and constants",
+      "interface": "Unknown input becomes a validated notification or a descriptive rejection",
+      "layer": "domain",
+      "allowed_dependencies": [],
+      "forbidden_dependencies": [
+        "packages/plugin",
+        "packages/router",
+        "packages/presenter",
+        "scripts",
+        "tests"
+      ],
+      "effects": "None; pure data validation",
+      "contracts": [
+        "production-boundaries"
+      ]
+    },
+    {
+      "id": "plugin",
+      "path": "packages/plugin",
+      "change": "add",
+      "responsibility": "Map OpenCode v1 session and tool events to notifications",
+      "interface": "V1 plugin hooks return promises; failures log without interrupting agents",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "Node builtins"
+      ],
+      "forbidden_dependencies": [
+        "packages/router",
+        "packages/presenter",
+        "scripts",
+        "tests"
+      ],
+      "effects": "Owns config file reads, SDK session/log calls and bounded HTTP delivery",
+      "contracts": [
+        "production-boundaries"
+      ]
+    },
+    {
+      "id": "router",
+      "path": "packages/router",
+      "change": "add",
+      "responsibility": "Receive and route workspace notifications",
+      "interface": "Authenticated loopback HTTP and workspace commands",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "Node builtins",
+        "vscode"
+      ],
+      "forbidden_dependencies": [
+        "packages/plugin",
+        "packages/presenter",
+        "scripts",
+        "tests"
+      ],
+      "effects": "Owns HTTP listener, terminal environment, installation and VS Code workspace commands",
+      "contracts": [
+        "production-boundaries"
+      ]
+    },
+    {
+      "id": "presenter",
+      "path": "packages/presenter",
+      "change": "add",
+      "responsibility": "Present notifications on the local computer",
+      "interface": "Validated deliver command chooses app/system according to focus settings",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "Node builtins",
+        "vscode",
+        "node-notifier"
+      ],
+      "forbidden_dependencies": [
+        "packages/plugin",
+        "packages/router",
+        "scripts",
+        "tests"
+      ],
+      "effects": "Owns VS Code UI and native notification process adapter",
+      "contracts": [
+        "production-boundaries"
+      ]
+    },
+    {
+      "id": "tooling",
+      "path": "scripts",
+      "change": "add",
+      "responsibility": "Build, validate, package and smoke-test deliverables",
+      "interface": "npm script commands fail nonzero on unmet contracts",
+      "layer": "development",
+      "allowed_dependencies": [
+        "all production modules",
+        "Node builtins",
+        "development tools"
+      ],
+      "forbidden_dependencies": [
+        "imports from production into tooling"
+      ],
+      "effects": "Owns task-local builds and isolated test processes",
+      "contracts": [
+        "production-boundaries"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "id": "production-boundaries",
+      "path": "scripts/check-architecture.mjs",
+      "status": "planned",
+      "rules": "Protocol is pure; adapters import only protocol and declared external effects; production cannot import scripts/tests.",
+      "check": "imports"
+    }
+  ],
+  "checks": [
+    {
+      "id": "imports",
+      "kind": "imports",
+      "command": "npm run check:architecture",
+      "expectation": "Actual graph passes; injected forbidden dependencies are rejected.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26.md"
+      }
+    },
+    {
+      "id": "behavior",
+      "kind": "behavior",
+      "command": "npm run check",
+      "expectation": "Strict typing, event/HTTP/presentation tests and documentation checks pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26.md"
+      }
+    },
+    {
+      "id": "packaging",
+      "kind": "behavior",
+      "command": "npm run package && npm run test:extension",
+      "expectation": "Both VSIX archives are valid and isolated VS Code extension host smoke passes.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26.md"
+      }
+    },
+    {
+      "id": "documentation",
+      "kind": "documentation",
+      "command": "npm run check:docs",
+      "expectation": "Markdown and local documentation links validate.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26.md"
+      }
+    },
+    {
+      "id": "native-v1",
+      "kind": "behavior",
+      "command": "npm run build && npm run test:native",
+      "expectation": "Real OpenCode v1.2.0 using a local fixture model delivers a completion through the bundled plugin and authenticated router.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26.md"
+      }
+    }
+  ],
+  "documentation": "Russian README and English development, design, verification and release documentation.",
+  "review": {
+    "status": "accepted",
+    "reviewer": "Fresh independent native subagent final_acceptance",
+    "evidence": "docs/review-2026-10-26.md",
+    "reconciliation": "Inspected all task-owned source, manifests and lockfiles, checks and build scripts, tests, docs, and workflows against scope; every file is covered. Generated dependencies, bundles, caches and assets are ignored. No sibling repository changes are included. Fresh review accepted effect ownership, interfaces and dependency contracts after corrections and executed checks."
+  }
+}

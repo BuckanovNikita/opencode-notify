@@ -1,0 +1,40 @@
+{
+  "name": "opencode-notify",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenCode v1 notifications across VS Code remote workspaces",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test packages/*/test/*.test.ts tests/*.test.ts",
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "check:docs": "markdownlint-cli2 '**/*.md' '#node_modules' '#packages/*/node_modules' '#.vscode-test' && node scripts/check-docs.mjs",
+    "check": "npm run typecheck && npm test && npm run check:architecture && npm run check:docs",
+    "build": "node scripts/build.mjs",
+    "package": "npm run build && node scripts/package.mjs",
+    "test:extension": "node scripts/test-extension.mjs",
+    "test:native": "tsx tests/native/smoke.ts"
+  },
+  "dependencies": {
+    "node-notifier": "10.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@types/node-notifier": "8.0.5",
+    "@types/vscode": "1.93.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.25.12",
+    "markdownlint-cli2": "0.24.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "node-notifier": {
+      "uuid": "11.1.1"
+    }
+  }
+}

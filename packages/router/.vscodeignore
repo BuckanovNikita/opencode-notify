@@ -1,0 +1,8 @@
+src/**
+test/**
+**/*.map
+package-lock.json
+node_modules/**/test/**
+node_modules/**/tests/**
+node_modules/**/example/**
+node_modules/**/examples/**
