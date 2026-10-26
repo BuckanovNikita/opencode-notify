@@ -13,6 +13,11 @@ export async function installPlugin(source: string, destination: string, replace
   // Even previously managed files may contain user edits: explicit confirmation owns replacement.
   if (existing !== undefined && !replace) return 'conflict';
   await mkdir(dirname(destination), { recursive: true });
-  await writeFile(destination, bundle, { flag: replace ? 'w' : 'wx', mode: 0o600 });
+  try { await writeFile(destination, bundle, { flag: replace ? 'w' : 'wx', mode: 0o600 }); }
+  catch (error) {
+    if (replace || !(error instanceof Error && 'code' in error && error.code === 'EEXIST')) throw error;
+    // Another window (or the user) created the file after our read. Never overwrite it.
+    return await readFile(destination, 'utf8') === bundle ? 'unchanged' : 'conflict';
+  }
   return 'installed';
 }

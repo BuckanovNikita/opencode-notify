@@ -1,8 +1,13 @@
 # OpenCode Notify Router
 
 Мост между OpenCode v1 на хосте рабочей области и локальным VS Code.
-Установите Router в SSH, WSL, контейнере или локальной рабочей области;
-расширение **OpenCode Notify** должно быть установлено локально.
+Локальное расширение **OpenCode Notify** автоматически устанавливает Router
+в доверенную рабочую область: SSH, WSL, контейнер, Remote Tunnels или локально.
+Этот VSIX также можно установить вручную на хост рабочей области.
+
+При активации Router устанавливает отсутствующий плагин в каталог OpenCode,
+учитывая `XDG_CONFIG_HOME`. Отличающийся существующий файл не перезаписывается.
+Отключение: `opencodeNotify.autoInstallPlugin: false` в настройках хоста.
 
 Оба VSIX доступны в [GitHub Releases](https://github.com/BuckanovNikita/opencode-notify/releases).
 

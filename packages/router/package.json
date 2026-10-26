@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "buckanovnikita",
   "license": "MIT",
   "engines": {
@@ -28,7 +28,8 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:opencodeNotify.focus"
+    "onCommand:opencodeNotify.focus",
+    "onCommand:opencodeNotify.routerStatus"
   ],
   "contributes": {
     "commands": [
@@ -44,7 +45,18 @@
         "command": "opencodeNotify.test",
         "title": "OpenCode Notify: Test Connection"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "OpenCode Notify Router",
+      "properties": {
+        "opencodeNotify.autoInstallPlugin": {
+          "type": "boolean",
+          "default": true,
+          "scope": "machine",
+          "description": "Automatically install the OpenCode v1 plugin when absent. Existing differing files are preserved; use Install or Update OpenCode v1 Plugin to replace them."
+        }
+      }
+    }
   },
   "type": "module"
 }

@@ -1,6 +1,7 @@
 src/**
 test/**
 **/*.map
+!dist/router.vsix
 package-lock.json
 node_modules/**/test/**
 node_modules/**/tests/**

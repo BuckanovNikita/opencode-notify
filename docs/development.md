@@ -17,8 +17,9 @@ and idle for the active run. It supports the two v1 permission event schemas and
 uses `question.asked` directly, avoiding duplicate before-tool notifications.
 The exported bundle must contain exactly one plugin function for old v1 loaders.
 
-The router owns loopback HTTP and terminal credentials. The presenter owns local
-UI and desktop effects. Commands pass plain validated JSON between hosts. HTTP
+The router owns loopback HTTP, terminal credentials and plugin filesystem writes.
+The presenter owns local UI, desktop effects and companion installation through
+VS Code. Commands pass plain validated JSON between hosts. HTTP
 acceptance means the local presenter accepted the event, not that an OS popup was
 seen. Secrets never appear in diagnostics or package artifacts.
 
@@ -34,9 +35,12 @@ xvfb-run -a npm run test:extension
 ```
 
 On a desktop with a usable display, omit `xvfb-run`. The extension test downloads
-an isolated VS Code 1.93.1 and installs the actual VSIXs into a temporary profile.
-It checks activation, commands, request authentication, validation, prompt
-acceptance and terminal environment injection. It never uses the user's profile.
+an isolated VS Code 1.93.1 and installs only the presenter VSIX into temporary
+profiles. The presenter must install its bundled Router, which must create the
+plugin in an isolated XDG config directory. Separate profiles check Router opt-out,
+plugin opt-out and preservation of a pre-existing plugin. It also checks activation,
+commands, request authentication, validation, prompt acceptance and terminal
+environment injection. It never uses the user's profile or OpenCode configuration.
 Use `VSCODE_TEST_VERSION` to explicitly test another VS Code version.
 
 `npm run test:native` downloads/runs an OpenCode v1.2.0 server through npm exec with isolated
@@ -47,8 +51,27 @@ The fixture uses a persistent server to match long-lived TUI sessions. Standalon
 `opencode run` can terminate before asynchronous plugin delivery on a slow machine.
 
 `npm run package` performs a locked production dependency install in the presenter,
-builds both VSIXs and writes SHA256SUMS. It includes native helper executables in
-the presenter and the standalone plugin plus CLI in the router.
+builds Router first, embeds that exact VSIX in presenter and writes SHA256SUMS.
+It includes native helper executables in presenter and the standalone plugin plus
+CLI in Router. The presenter uses `workbench.extensions.installExtension` with the
+bundled VSIX URI; VS Code transfers it and selects the workspace extension host.
+No Marketplace dependency or remote GitHub access is required. Private status
+commands detect the current Router version and host; newer versions are preserved.
+An active older Router may need a reload after update. Setup never reloads a window
+without user action. User settings can disable Router or plugin auto-installation.
+Automatic plugin writes are create-only: differing files need the explicit update
+command and confirmation. Concurrent first installs preserve the winning file.
+
+Active command availability is not installed inventory. Before installing, setup
+checks disabled and pending versions as well. For remote hosts it uses VS Code's
+internal `_remoteCLI.manageExtensions` read-only list command (present in 1.93.1
+and current upstream); unavailable or malformed inventory prevents installation
+and leaves manual VSIX recovery. For local packaged installations it conservatively
+reads Router manifests alongside presenter, including other profiles and obsolete
+copies. An obsolete newer copy may require manual recovery. Extension host identity
+comes from `extensionKind`; `env.remoteName` is window context on both hosts.
+Inventory and VSIX installation are not an atomic transaction: simultaneous external
+Router updates remain outside the version-preservation guarantee.
 
 The desktop adapter pins node-notifier 10 because version 11 requires newer Node
 than the minimum VS Code host. Its uuid dependency is overridden to 11.1.1, whose
@@ -61,8 +84,10 @@ Linux uses an explicit `execFile` argv boundary rather than a shell command.
 Automatic local extension-host tests do not prove actual SSH/WSL placement or
 Windows/macOS/Linux visual notification behavior. Record those separately:
 
-1. Install presenter locally and router on the workspace host.
-2. Install the plugin by command and start OpenCode v1 in a fresh terminal.
+1. Install only presenter locally. Open a new trusted remote host and verify Router
+   appears on that host, including when Router also exists on the local host.
+2. Verify the plugin appeared in that host's XDG config directory and start
+   OpenCode v1 in a fresh terminal. Check the opt-outs and manual recovery commands.
 3. Verify completion, question, permission and error; cancel a run and confirm no
    completion. Enable child completions and repeat with a child session.
 4. Switch away from VS Code for OS mode, return for app mode, and check sound.

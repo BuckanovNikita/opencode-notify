@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "buckanovnikita",
   "license": "MIT",
   "engines": {
@@ -44,6 +44,10 @@
       {
         "command": "opencodeNotify.showLog",
         "title": "OpenCode Notify: Show Local Log"
+      },
+      {
+        "command": "opencodeNotify.setup",
+        "title": "OpenCode Notify: Set Up Workspace"
       }
     ],
     "configuration": {
@@ -106,6 +110,12 @@
           "default": true,
           "scope": "window",
           "description": "Display subagent complete events sent by the plugin."
+        },
+        "opencodeNotify.autoInstallRouter": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Automatically install the bundled Router in trusted local and remote workspaces. Existing terminals may need a window reload after updates."
         }
       }
     }

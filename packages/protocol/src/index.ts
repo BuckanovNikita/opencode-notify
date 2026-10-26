@@ -22,6 +22,7 @@ export const COMMANDS = {
   deliver: 'opencodeNotify.deliver', focus: 'opencodeNotify.focus',
   install: 'opencodeNotify.installPlugin', start: 'opencodeNotify.start',
   test: 'opencodeNotify.test', log: 'opencodeNotify.showLog',
+  status: 'opencodeNotify.routerStatus', setup: 'opencodeNotify.setup',
 } as const;
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

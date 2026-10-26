@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "task": "Automatic setup for desktop VS Code remotes",
+  "scope": [
+    "packages/protocol/src/index.ts",
+    "packages/presenter",
+    "packages/router",
+    "scripts",
+    "tests",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "package.json",
+    "package-lock.json"
+  ],
+  "impact": "modules",
+  "rules": "AGENTS.md and docs/development.md: protocol is pure; adapters own effects and may share only protocol; existing import checker includes negative probes.",
+  "modules": [
+    {
+      "id": "protocol",
+      "path": "packages/protocol/src/index.ts",
+      "change": "modify",
+      "responsibility": "Shared notification and command contracts",
+      "interface": "Add private status command; preserve existing event protocol",
+      "layer": "pure protocol",
+      "allowed_dependencies": [],
+      "forbidden_dependencies": [
+        "other adapters",
+        "runtime OpenCode SDKs"
+      ],
+      "effects": "None",
+      "contracts": [
+        "boundaries"
+      ]
+    },
+    {
+      "id": "presenter",
+      "path": "packages/presenter/src",
+      "change": "modify",
+      "responsibility": "Local notification presentation and companion installation",
+      "interface": "createRouterSetup returns skipped/ready/installed/reload-required; typed adapter supplies active status, installed inventory and VSIX installation; unknown inventory prevents installation.",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "vscode",
+        "node-notifier",
+        "existing native subprocess dependencies"
+      ],
+      "forbidden_dependencies": [
+        "other adapters",
+        "runtime OpenCode SDKs"
+      ],
+      "effects": "Owns VS Code local presentation, configuration, read-only installed inventory and installation; remote inventory uses guarded core CLI command, local inventory uses VS Code filesystem reads.",
+      "contracts": [
+        "boundaries"
+      ]
+    },
+    {
+      "id": "router",
+      "path": "packages/router/src",
+      "change": "modify",
+      "responsibility": "Workspace bridge and plugin installation",
+      "interface": "Status returns version; automatic install preserves differing content; explicit command retains replacement confirmation",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "vscode",
+        "node:fs/promises",
+        "node:path",
+        "node:os",
+        "node:http",
+        "node:crypto"
+      ],
+      "forbidden_dependencies": [
+        "other adapters",
+        "runtime OpenCode SDKs"
+      ],
+      "effects": "Workspace HTTP, environment and plugin filesystem",
+      "contracts": [
+        "boundaries"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "id": "boundaries",
+      "path": "scripts/check-architecture.mjs",
+      "status": "existing",
+      "rules": "Pure protocol; no cross-adapter imports; only explicit Node and VS Code dependencies; negative probes reject forbidden edges.",
+      "check": "imports"
+    }
+  ],
+  "checks": [
+    {
+      "id": "imports",
+      "kind": "imports",
+      "command": "npm run check:architecture",
+      "expectation": "All production imports and injected forbidden-edge probes pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-automatic-setup.md"
+      }
+    },
+    {
+      "id": "checks",
+      "kind": "behavior",
+      "command": "npm run check",
+      "expectation": "Strict types, complete unit/integration suite, import rules and documentation checks pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-automatic-setup.md"
+      }
+    },
+    {
+      "id": "package",
+      "kind": "behavior",
+      "command": "npm run package",
+      "expectation": "Matching version VSIXs; presenter embeds exact Router bytes; plugin and native helpers are present.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-automatic-setup.md"
+      }
+    },
+    {
+      "id": "native",
+      "kind": "behavior",
+      "command": "npm run test:native",
+      "expectation": "Real isolated OpenCode v1 invokes the bundled plugin successfully.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-automatic-setup.md"
+      }
+    },
+    {
+      "id": "extension",
+      "kind": "behavior",
+      "command": "xvfb-run -a npm run test:extension",
+      "expectation": "Installed presenter provisions Router and plugin in an isolated VS Code profile; opt-out and preserved-file cases pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-automatic-setup.md"
+      }
+    },
+    {
+      "id": "docs",
+      "kind": "documentation",
+      "command": "npm run check:docs",
+      "expectation": "Markdown and local documentation links pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-automatic-setup.md"
+      }
+    }
+  ],
+  "documentation": "Update all Russian READMEs, English development guide, changelog, design/plan and dated verification. Preserve completed initial-release history.",
+  "review": {
+    "status": "accepted",
+    "reviewer": "Independent GPT-6 Astra review, with parent acceptance of the regression-verified correction pass under executing-plans",
+    "evidence": "docs/verification-2026-10-26-automatic-setup.md",
+    "reconciliation": "Inspected the complete tracked and untracked diff from clean HEAD 4c9423e. Scope includes runtime, manifests/locks, packaged VSIX inclusion, scripts/harness, tests, documentation and this record. No unrelated work is excluded. Initial fix-first findings were reproduced and corrected, with all 46 tests and five real extension profiles passing; actual remote placement remains explicitly unverified."
+  }
+}
