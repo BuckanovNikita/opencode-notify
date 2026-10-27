@@ -83,6 +83,6 @@ The earlier release hold is superseded for this publication; Windows acceptance
 remains outstanding. No runtime or dependency changes are needed for this step.
 
 - [x] Rerun release checks, package inspection and isolated host smoke.
-- [ ] Commit the reviewed changes, tag v0.3.0, push and verify published VSIXs.
+- [x] Commit the reviewed changes, tag v0.3.0, push and verify published VSIXs.
 
 See [release evidence](../../verification-2026-10-27-release-v0.3.0.md).

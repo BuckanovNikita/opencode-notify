@@ -37,5 +37,28 @@ removed; both extensions require VS Code 1.143.1 or newer.
 
 ## Publication
 
-The release commit, annotated tag, workflow outcome and downloaded asset hashes
-will be recorded after remote publication is verified.
+Release commit: `56408a5f139da91dae3fd6c53503b069519fa55c`. Annotated tag
+`v0.3.0` points to that commit; both main and the tag were pushed successfully.
+
+[CI](https://github.com/BuckanovNikita/opencode-notify/actions/runs/40506965193) and
+[Release VSIX](https://github.com/BuckanovNikita/opencode-notify/actions/runs/40506990008)
+completed successfully for the tagged commit. The tag workflow published
+[v0.3.0](https://github.com/BuckanovNikita/opencode-notify/releases/tag/v0.3.0)
+at 12:52:17 UTC, with both VSIXs and SHA256SUMS. No manual publication fallback
+was needed. The published notes include the native Windows acceptance limitation
+and the plugin update/restart requirement.
+
+All three release assets were downloaded. File sizes and GitHub-reported SHA-256
+digests matched; both VSIXs matched the downloaded SHA256SUMS. ZIP inspection
+confirmed v0.3.0 and the 1.143.1 host minimum in both manifests, byte-identical
+embedded Router, bundled plugin, and both Windows helper executables.
+
+| Published file | SHA-256 |
+| --- | --- |
+| `opencode-notify-0.3.0.vsix` | `901aa914aa3cf606c5c867ced82b1ea54514a02777474d668d42a929ce55c7e0` |
+| `opencode-notify-router-0.3.0.vsix` | `66faca6cd7216c8aa49ce1549bb50a82c754b9cd0cfc49b31a79a0ee8c6dfda7` |
+| `SHA256SUMS` | `78097466ca5f6da91a1747c2ac5546f23674adf9115891fa6a254d17e7b6fcda` |
+
+Temporary verification downloads were removed after inspection. Native Windows
+banner/history click acceptance remains outstanding; publication does not change
+that recorded result.
