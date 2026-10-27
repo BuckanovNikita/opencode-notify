@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "task": "Visible notifications and exact console focus",
+  "scope": [
+    "packages",
+    "scripts",
+    "tests",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "package.json",
+    "package-lock.json"
+  ],
+  "impact": "modules",
+  "rules": "AGENTS.md and docs/development.md: protocol is pure; adapters own effects and may share only protocol; existing import checker includes negative probes.",
+  "modules": [
+    {
+      "id": "protocol",
+      "path": "packages/protocol/src/index.ts",
+      "change": "modify",
+      "responsibility": "Shared notification and command contracts",
+      "interface": "Backward-compatible notifications plus validated source registration, peer relay and opaque activation contracts. Validated legacy presenter focus hints preserve explicit terminal-ID compatibility.",
+      "layer": "pure protocol",
+      "allowed_dependencies": [],
+      "forbidden_dependencies": [
+        "other adapters",
+        "runtime OpenCode SDKs"
+      ],
+      "effects": "None",
+      "contracts": [
+        "boundaries"
+      ]
+    },
+    {
+      "id": "presenter",
+      "path": "packages/presenter/src",
+      "change": "modify",
+      "responsibility": "Local notification presentation and companion installation",
+      "interface": "Authenticated local peer relay; both mode; origin activation and bounded native callback targets. Supported VS Code host minimum is 1.143.1; preserve URI fallback for unavailable foreground actions on supported hosts.",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "vscode",
+        "node-notifier",
+        "node:child_process",
+        "node:util",
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "node:http",
+        "node:net"
+      ],
+      "forbidden_dependencies": [
+        "other adapters",
+        "runtime OpenCode SDKs"
+      ],
+      "effects": "Local loopback IPC, private discovery files, named pipe callbacks, native subprocesses and VS Code window/UI activation; preserve setup ownership.",
+      "contracts": [
+        "boundaries"
+      ]
+    },
+    {
+      "id": "router",
+      "path": "packages/router/src",
+      "change": "modify",
+      "responsibility": "Workspace bridge and plugin installation",
+      "interface": "Authenticated POST /sources, instance bindings verified against terminal process ancestry, exact focus and relevant candidate selection.",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "vscode",
+        "node:fs/promises",
+        "node:path",
+        "node:os",
+        "node:http",
+        "node:crypto",
+        "node:child_process",
+        "node:util"
+      ],
+      "forbidden_dependencies": [
+        "other adapters",
+        "runtime OpenCode SDKs"
+      ],
+      "effects": "Workspace process metadata inspection, authenticated HTTP, terminal lifecycle/focus and existing plugin installation.",
+      "contracts": [
+        "boundaries"
+      ]
+    },
+    {
+      "id": "plugin",
+      "path": "packages/plugin/src",
+      "change": "modify",
+      "responsibility": "OpenCode v1 events and bounded notification/source transport",
+      "interface": "Register random instance identity with process start metadata at startup; include optional identity/session labels; retain existing completion semantics and nonfatal transport failures.",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "node:crypto",
+        "node:fs/promises",
+        "node:os",
+        "node:path"
+      ],
+      "forbidden_dependencies": [
+        "other adapters",
+        "runtime OpenCode SDKs"
+      ],
+      "effects": "Reads plugin configuration and process identity; bounded authenticated loopback HTTP; diagnostic logging.",
+      "contracts": [
+        "boundaries"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "id": "boundaries",
+      "path": "scripts/check-architecture.mjs",
+      "status": "existing",
+      "rules": "Pure protocol; no cross-adapter imports; only explicit Node and VS Code dependencies; negative probes reject forbidden edges.",
+      "check": "imports"
+    }
+  ],
+  "checks": [
+    {
+      "id": "imports",
+      "kind": "imports",
+      "command": "npm run check:architecture",
+      "expectation": "All production imports and injected forbidden-edge probes pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "checks",
+      "kind": "behavior",
+      "command": "npm run check",
+      "expectation": "Strict types, complete unit/integration suite, import rules and documentation checks pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "package",
+      "kind": "behavior",
+      "command": "npm run package",
+      "expectation": "Matching version VSIXs; presenter embeds exact Router bytes; plugin and native helpers are present.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "native",
+      "kind": "behavior",
+      "command": "npm run test:native",
+      "expectation": "Real isolated OpenCode v1 invokes the bundled plugin successfully.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "extension",
+      "kind": "behavior",
+      "command": "xvfb-run -a npm run test:extension",
+      "expectation": "Installed presenter provisions Router/plugin on the supported minimum 1.143.1; isolated opt-outs and exact npm source selection pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "docs",
+      "kind": "documentation",
+      "command": "npm run check:docs",
+      "expectation": "Markdown and local documentation links pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "extension-current",
+      "kind": "behavior",
+      "command": "VSCODE_TEST_VERSION=1.143.1 xvfb-run -a npm run test:extension",
+      "expectation": "Current VS Code isolated extension-host smoke and exact source selection pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "windows",
+      "kind": "behavior",
+      "command": "On native Windows: npm run test:windows -- --automate",
+      "expectation": "Real bundled helper emits banner and late Notification Center activation callbacks; CIM source binding succeeds.",
+      "result": {
+        "status": "failed",
+        "exit_code": 1,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "multiwindow-current",
+      "kind": "behavior",
+      "command": "OPENCODE_NOTIFY_SMOKE_PROFILES=1 VSCODE_TEST_VERSION=1.143.1 xvfb-run -a npm run test:multiwindow",
+      "expectation": "Two actual named profiles share discovery; focused peer receives one alert, click foregrounds original exact source terminal, task resources cleaned.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    },
+    {
+      "id": "windows-desktop",
+      "kind": "behavior",
+      "command": "On native Windows: OPENCODE_NOTIFY_SMOKE_PROFILES=1 OPENCODE_NOTIFY_SMOKE_NATIVE=center npm run test:multiwindow (diagnostic); complete acceptance also requires native mode both",
+      "expectation": "App action plus genuine shell actions foreground A and select its exact console. Final app stage passed, center diagnostic failed; banner acceptance also remains required.",
+      "result": {
+        "status": "failed",
+        "exit_code": 1,
+        "evidence": "docs/verification-2026-10-26-visible-focus.md"
+      }
+    }
+  ],
+  "documentation": "Update all Russian READMEs, English development guide, changelog, design/plan and dated verification. Preserve completed initial-release history.",
+  "review": {
+    "status": "accepted",
+    "reviewer": "Fresh GPT-6 Astra runtime review and fresh GPT-6.1 Sol continuation review, each at requested high effort; runtime model realization unobservable.",
+    "evidence": "docs/review-2026-10-26-visible-focus.md",
+    "reconciliation": "Parent reconciled complete tracked and untracked task-owned diff from clean 0c9babc: protocol, plugin, Router, presenter, adapter dependencies/import probes, tests and desktop harnesses including shared host resolution and shell-only UIA selection, build/package metadata, Russian READMEs, English docs and workflow artifacts. No unrelated changes excluded. Runtime and continuation findings resolved and independently rereviewed. Actual failed native desktop checks remain recorded and block acceptance/release. On 2026-10-27 the user requested publication after the desktop gap was disclosed. The release preparation only adds documentation; it preserves failed desktop checks and documents the publication instruction in docs/verification-2026-10-27-release-v0.3.0.md."
+  }
+}

@@ -14,3 +14,4 @@ await build({ ...common, entryPoints: ['packages/router/src/cli.ts'], outfile: '
 await mkdir('dist', { recursive: true });
 await copyFile('packages/router/dist/opencode-notify.js', 'dist/opencode-notify.js');
 await build({ ...common, entryPoints: ['tests/extension/suite.ts'], outfile: 'dist/extension-tests.cjs', format: 'cjs', external: ['vscode'] });
+await build({ ...common, entryPoints: ['tests/extension/peer-window.ts'], outfile: 'dist/peer-window.cjs', format: 'cjs', external: ['vscode'] });

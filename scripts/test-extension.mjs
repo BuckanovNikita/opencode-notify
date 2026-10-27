@@ -1,3 +1,4 @@
+import { resolveTestAppRoot } from './vscode-test-host.mjs';
 import { downloadAndUnzipVSCode, runTests, resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, rm, readFile, writeFile, copyFile } from 'node:fs/promises';
@@ -5,9 +6,27 @@ import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 const version = JSON.parse(await readFile('package.json', 'utf8')).version;
-const executable = await downloadAndUnzipVSCode(process.env.VSCODE_TEST_VERSION || '1.93.1');
+let requestedVersion = process.env.VSCODE_TEST_VERSION || JSON.parse(await readFile('packages/presenter/package.json', 'utf8')).engines.vscode.replace(/^\^/, '');
+if (requestedVersion === 'stable') {
+  const response = await fetch('https://update.code.visualstudio.com/api/releases/stable', { signal: AbortSignal.timeout(15000) });
+  if (!response.ok) throw new Error('Could not resolve current VS Code version');
+  const versions = await response.json();
+  if (!Array.isArray(versions) || typeof versions[0] !== 'string') throw new Error('Invalid VS Code version response');
+  requestedVersion = versions[0];
+}
+const executable = process.env.VSCODE_TEST_EXECUTABLE || await downloadAndUnzipVSCode(requestedVersion);
+const application = await resolveTestAppRoot(executable);
+const actualVersion = JSON.parse(await readFile(join(application, 'package.json'), 'utf8')).version;
+if (/^\d+\.\d+\.\d+$/.test(requestedVersion) && actualVersion !== requestedVersion) throw new Error(`VS Code version mismatch: ${actualVersion} != ${requestedVersion}`);
+console.log(`Testing actual VS Code ${actualVersion}`);
 const task = await mkdtemp(join(tmpdir(), 'opencode-notify-vscode-'));
 try {
+  const harness = join(task, 'harness'); await mkdir(harness);
+  await copyFile('tests/extension/package.json', join(harness, 'package.json'));
+  await writeFile(join(harness, 'empty.cjs'), 'exports.activate = () => {};');
+  await copyFile('dist/extension-tests.cjs', join(harness, 'extension-tests.cjs'));
+  const artifact = join(task, `opencode-notify-${version}.vsix`);
+  await copyFile(resolve('artifacts', `opencode-notify-${version}.vsix`), artifact);
   for (const mode of ['automatic', 'router-disabled', 'plugin-disabled', 'preserve', 'newer-disabled']) {
     const scenario = join(task, mode);
     const userData = join(scenario, 'profile'); const extensions = join(scenario, 'extensions');
@@ -23,11 +42,14 @@ try {
       await mkdir(join(config, 'opencode', 'plugins'), { recursive: true });
       await writeFile(join(config, 'opencode', 'plugins', 'opencode-notify.js'), '// existing personal plugin\n');
     }
-    const [cli, ...baseArgs] = resolveCliArgsFromVSCodeExecutablePath(executable);
+    const [resolvedCli, ...resolvedBase] = resolveCliArgsFromVSCodeExecutablePath(executable);
+    const cli = process.platform === 'win32' ? executable : resolvedCli;
+    const baseArgs = process.platform === 'win32' ? [join(application, 'out', 'cli.js')] : resolvedBase;
+    const cliEnv = { ...process.env, ELECTRON_RUN_AS_NODE: process.platform === 'win32' ? '1' : undefined, DONT_PROMPT_WSL_INSTALL: '1' };
     const isolated = [`--user-data-dir=${userData}`, `--extensions-dir=${extensions}`];
     execFileSync(cli, [...baseArgs.filter(arg => !arg.startsWith('--user-data-dir') && !arg.startsWith('--extensions-dir')),
-        ...isolated, '--install-extension', resolve('artifacts', `opencode-notify-${version}.vsix`), '--force'],
-      { stdio: 'inherit', env: { ...process.env, ELECTRON_RUN_AS_NODE: undefined, DONT_PROMPT_WSL_INSTALL: '1' }, timeout: 120000 });
+        ...isolated, '--install-extension', artifact, '--force'],
+      { stdio: 'inherit', env: cliEnv, timeout: 120000 });
     if (mode === 'newer-disabled') {
       const fixture = join(scenario, 'newer-router'); const vsix = join(scenario, 'newer-router.vsix');
       await mkdir(join(fixture, 'dist'), { recursive: true });
@@ -40,10 +62,10 @@ try {
         { cwd: fixture, stdio: 'inherit', timeout: 120000 });
       execFileSync(cli, [...baseArgs.filter(arg => !arg.startsWith('--user-data-dir') && !arg.startsWith('--extensions-dir')),
         ...isolated, '--install-extension', vsix],
-      { stdio: 'inherit', env: { ...process.env, ELECTRON_RUN_AS_NODE: undefined, DONT_PROMPT_WSL_INSTALL: '1' }, timeout: 120000 });
+      { stdio: 'inherit', env: cliEnv, timeout: 120000 });
     }
     await runTests({ vscodeExecutablePath: executable, reuseMachineInstall: false,
-      extensionDevelopmentPath: resolve('tests/extension'), extensionTestsPath: resolve('dist/extension-tests.cjs'),
+      extensionDevelopmentPath: harness, extensionTestsPath: join(harness, 'extension-tests.cjs'),
       extensionTestsEnv: { OPENCODE_NOTIFY_SMOKE_DIR: scenario, OPENCODE_NOTIFY_SETUP_MODE: mode,
         OPENCODE_NOTIFY_EXTENSIONS_DIR: extensions, XDG_CONFIG_HOME: config },
       launchArgs: [workspace, ...isolated, '--disable-workspace-trust', '--skip-welcome', '--skip-release-notes',

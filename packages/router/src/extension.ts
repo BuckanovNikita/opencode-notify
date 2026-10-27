@@ -3,9 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { delimiter, join } from 'node:path';
-import { COMMANDS, isRecord, type Notification } from '../../protocol/src/index.js';
+import { COMMANDS, parseFocusTarget, type FocusTarget, type Notification } from '../../protocol/src/index.js';
 import { startRouter } from './server.js';
 import { installPlugin } from './install.js';
+import { SourceRegistry } from './sources.js';
 
 let shutdown: (() => Promise<void>) | undefined;
 const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
@@ -15,7 +16,25 @@ export async function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel('OpenCode Notify Router');
   const log = (message: string) => output.appendLine(`${new Date().toISOString()} ${message}`);
   context.subscriptions.push(output);
-  const router = await startRouter({ log, deliver: async notification => {
+  const sources = new SourceRegistry<vscode.Terminal>();
+  const observations = new Map<vscode.Terminal, Promise<void>>();
+  const observe = (terminal: vscode.Terminal, terminalId?: string) => {
+    const pending = Promise.resolve(terminal.processId).catch(() => undefined).then(async pid => {
+      if (observations.get(terminal) === pending && vscode.window.terminals.includes(terminal)) await sources.observe(terminal, pid, terminalId);
+    });
+    observations.set(terminal, pending);
+    return pending;
+  };
+  for (const terminal of vscode.window.terminals) void observe(terminal);
+  context.subscriptions.push(vscode.window.onDidOpenTerminal(terminal => { if (!observations.has(terminal)) void observe(terminal); }));
+  context.subscriptions.push(vscode.window.onDidCloseTerminal(terminal => { sources.close(terminal); observations.delete(terminal); }));
+  const router = await startRouter({ log, register: async source => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([Promise.all(observations.values()), new Promise<void>(resolve => { timer = setTimeout(resolve, 1500); })]);
+    } finally { if (timer) clearTimeout(timer); }
+    await sources.register(source);
+  }, deliver: async notification => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       const accepted = await Promise.race([
@@ -43,10 +62,6 @@ export async function activate(context: vscode.ExtensionContext) {
   }
   env.prepend('PATH', `${bin}${delimiter}`);
 
-  const terminals = new Map<string, vscode.Terminal>();
-  context.subscriptions.push(vscode.window.onDidCloseTerminal(terminal => {
-    for (const [id, candidate] of terminals) if (candidate === terminal) terminals.delete(id);
-  }));
   context.subscriptions.push(vscode.commands.registerCommand(COMMANDS.start, async () => {
     const folders = vscode.workspace.workspaceFolders;
     const folder = folders && folders.length > 1 ? await vscode.window.showWorkspaceFolderPick() : folders?.[0];
@@ -55,18 +70,24 @@ export async function activate(context: vscode.ExtensionContext) {
     const terminal = vscode.window.createTerminal({ name: `OpenCode${folder ? ` · ${folder.name}` : ''}`,
       ...(folder ? { cwd: folder.uri } : {}),
       env: { OPENCODE_NOTIFY_URL: router.url, OPENCODE_NOTIFY_TOKEN: router.token, OPENCODE_NOTIFY_TERMINAL_ID: terminalId } });
-    terminals.set(terminalId, terminal); terminal.show(); terminal.sendText('opencode');
+    void observe(terminal, terminalId); terminal.show(); terminal.sendText('opencode');
   }));
   context.subscriptions.push(vscode.commands.registerCommand(COMMANDS.focus, async (value: unknown) => {
-    const terminalId = isRecord(value) && typeof value.terminalId === 'string' ? value.terminalId : undefined;
-    const exact = terminalId ? terminals.get(terminalId) : undefined;
-    if (exact) { exact.show(); return; }
-    const all = vscode.window.terminals;
-    if (all.length === 1) { all[0]!.show(); return; }
-    if (!all.length) { void vscode.window.showInformationMessage('The originating terminal is no longer open.'); return; }
-    const selected = await vscode.window.showQuickPick(all.map(terminal => ({ label: terminal.name, terminal })),
-      { placeHolder: 'Choose the OpenCode terminal' });
-    selected?.terminal.show();
+    let notification: FocusTarget;
+    try { notification = parseFocusTarget(value); } catch { return; }
+    const result = sources.resolve(notification);
+    if (result.kind === 'exact') { result.terminal.show(); return; }
+    if (result.kind === 'unavailable') {
+      void vscode.window.showInformationMessage('The originating OpenCode terminal is unavailable. Restart OpenCode in a fresh terminal to register its source.');
+      return;
+    }
+    const selected = await vscode.window.showQuickPick(result.terminals.map(terminal => ({
+      label: terminal.name,
+      description: `${notification.project} · ${notification.sessionTitle || notification.sessionId}`,
+      detail: `${notification.directory} · terminal ${vscode.window.terminals.indexOf(terminal) + 1}`,
+      terminal,
+    })), { placeHolder: 'Choose the originating OpenCode terminal' });
+    if (selected && vscode.window.terminals.includes(selected.terminal)) selected.terminal.show();
   }));
   const configRoot = process.env.XDG_CONFIG_HOME || join(homedir(), '.config');
   const destination = join(configRoot, 'opencode', 'plugins', 'opencode-notify.js');

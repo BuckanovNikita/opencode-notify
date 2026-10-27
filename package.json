@@ -1,6 +1,6 @@
 {
   "name": "opencode-notify",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "OpenCode v1 notifications across VS Code remote workspaces",
@@ -16,7 +16,9 @@
     "build": "node scripts/build.mjs",
     "package": "npm run build && node scripts/package.mjs",
     "test:extension": "node scripts/test-extension.mjs",
-    "test:native": "tsx tests/native/smoke.ts"
+    "test:native": "tsx tests/native/smoke.ts",
+    "test:multiwindow": "node scripts/test-multiwindow.mjs",
+    "test:windows": "node scripts/test-windows.mjs"
   },
   "dependencies": {
     "node-notifier": "10.0.1"

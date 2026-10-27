@@ -6,12 +6,14 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { once } from 'node:events';
 import { startRouter } from '../../packages/router/src/server.js';
-import type { Notification } from '../../packages/protocol/src/index.js';
+import type { Notification, SourceRegistration } from '../../packages/protocol/src/index.js';
 
 const task = await mkdtemp(join(tmpdir(), 'opencode-notify-v1-'));
 const received: Notification[] = [];
+const sources: SourceRegistration[] = [];
 let requests = 0;
-const router = await startRouter({ deliver: async notification => { received.push(notification); }, log: console.error });
+const router = await startRouter({ deliver: async notification => { received.push(notification); },
+  register: async source => { sources.push(source); }, log: console.error });
 const model = createServer(async (request, response) => {
   const chunks: Buffer[] = [];
   for await (const chunk of request) chunks.push(Buffer.from(chunk as Uint8Array));
@@ -89,6 +91,9 @@ try {
   for (let attempt = 0; attempt < 20 && received.length === 0; attempt++) await new Promise(resolve => setTimeout(resolve, 100));
   assert.equal(received.length, 1, `Expected a completion notification. OpenCode output:\n${output}`);
   assert.equal(received[0]?.event, 'complete');
+  assert.equal(sources.length, 1, 'Real OpenCode startup must register exactly one instance');
+  assert.equal(received[0]?.instanceId, sources[0]?.instanceId);
+  assert.equal(received[0]?.sessionTitle, 'Notification smoke');
   console.log('Real OpenCode v1.2.0 server smoke passed: local provider -> native session events -> bundled plugin -> authenticated HTTP notification.');
 } finally {
   if (child?.pid && child.exitCode === null && child.signalCode === null) {

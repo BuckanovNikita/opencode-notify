@@ -3,7 +3,7 @@
 ## Runtime and modules
 
 Use Node >=22 and npm with the committed lockfiles. Extension bundles target
-Node 20 for VS Code >=1.93. OpenCode runs the standalone ESM plugin in its own v1
+Node 20 for VS Code >=1.143.1. OpenCode runs the standalone ESM plugin in its own v1
 runtime; neither OpenCode SDK is a runtime dependency.
 
 Production modules live under `packages/{protocol,plugin,router,presenter}/src`.
@@ -32,10 +32,16 @@ npm audit --omit=dev
 npm run package
 npm run test:native
 xvfb-run -a npm run test:extension
+xvfb-run -a npm run test:multiwindow
+VSCODE_TEST_VERSION="${NOTIFY_CURRENT_VSCODE:?set an explicit current VS Code version}" xvfb-run -a npm run test:extension
+VSCODE_TEST_VERSION="${NOTIFY_CURRENT_VSCODE:?set an explicit current VS Code version}" xvfb-run -a npm run test:multiwindow
 ```
 
+Set `NOTIFY_CURRENT_VSCODE` to an explicit version from the official VS Code
+release notes. The multiwindow harness rejects the `stable` alias so a failed
+network lookup cannot silently substitute a cached minimum version.
 On a desktop with a usable display, omit `xvfb-run`. The extension test downloads
-an isolated VS Code 1.93.1 and installs only the presenter VSIX into temporary
+the minimum supported VS Code from the presenter manifest (currently 1.143.1) and installs only the presenter VSIX into temporary
 profiles. The presenter must install its bundled Router, which must create the
 plugin in an isolated XDG config directory. Separate profiles check Router opt-out,
 plugin opt-out and preservation of a pre-existing plugin. It also checks activation,
@@ -64,8 +70,7 @@ command and confirmation. Concurrent first installs preserve the winning file.
 
 Active command availability is not installed inventory. Before installing, setup
 checks disabled and pending versions as well. For remote hosts it uses VS Code's
-internal `_remoteCLI.manageExtensions` read-only list command (present in 1.93.1
-and current upstream); unavailable or malformed inventory prevents installation
+internal `_remoteCLI.manageExtensions` read-only list command (validated on the supported host); unavailable or malformed inventory prevents installation
 and leaves manual VSIX recovery. For local packaged installations it conservatively
 reads Router manifests alongside presenter, including other profiles and obsolete
 copies. An obsolete newer copy may require manual recovery. Extension host identity
@@ -73,11 +78,47 @@ comes from `extensionKind`; `env.remoteName` is window context on both hosts.
 Inventory and VSIX installation are not an atomic transaction: simultaneous external
 Router updates remain outside the version-preservation guarantee.
 
-The desktop adapter pins node-notifier 10 because version 11 requires newer Node
-than the minimum VS Code host. Its uuid dependency is overridden to 11.1.1, whose
+The desktop adapter retains the validated node-notifier 10 helper bundle. Its uuid dependency is overridden to 11.1.1, whose
 CommonJS `v4` API remains compatible and contains the bounds-check fixes.
 Do not replace bundled helper files without updating their licenses and tests.
 Linux uses an explicit `execFile` argv boundary rather than a shell command.
+
+## Source and presenter contracts
+
+Protocol v1 still accepts old messages. New optional `instanceId` and
+`sessionTitle` fields identify registered sessions. The plugin posts authenticated
+`/sources` registration before returning hooks; a two-second transport deadline
+and nonfatal failure handling keep notifications available on older Routers.
+Source metadata includes PID, parent PID, estimated process start epoch milliseconds,
+directory and optional extension-created terminal ID. Router checks the observed
+identity before binding to a terminal object. Linux uses process start ticks;
+Windows uses a bounded CIM snapshot; other POSIX hosts use `ps` start metadata.
+Initial start estimates tolerate clock precision; observed terminal identities
+must match exactly. Bindings survive source exit and expire when terminals close.
+Uncertain identity never selects by name, directory, or remaining terminal count.
+
+Presenter peers advertise private, random bearer credentials and loopback ports
+under shared user-data storage. Named profiles resolve to that same directory;
+other user-data installations remain isolated. Only enabled trusted windows
+participate. The receiver rechecks focus and event settings and never rebroadcasts.
+The origin sends native notifications, retains opaque activation targets, and
+resolves relay actions. Peer request authentication, input size, connection limits,
+deadlines and retention are independently tested. System delivery starts without
+waiting for peer discovery. Explicit `auto`, `app` and `system` modes remain.
+
+Windows uses the bundled SnoreToast executable directly with an extension-owned
+named pipe. Callback framing follows the upstream UTF-16 connection EOF contract;
+one read is not one message. Dismiss/timeout does not consume an activation target.
+Windows targets are bounded to 512 and 24 hours; origin targets to 4096 and 24 hours.
+Extension disposal closes listeners, helpers and targets. A window focus command
+is preferred, with a bounded wait for its asynchronous focus-state update; otherwise an origin-generated `asExternalUri` routes to that window.
+First URI activation can require user consent. Update the preserved plugin with
+the explicit installation command and restart OpenCode for automatic targeting.
+
+The single-window host smoke uses real npm child processes with identical names
+and directories and checks exact terminal object selection and retained output.
+The multiwindow harness owns isolated profiles and CDP endpoints; it inspects real
+app notifications and actions. Neither substitutes for real Windows acceptance.
 
 ## Manual platform acceptance
 
@@ -92,8 +133,26 @@ Windows/macOS/Linux visual notification behavior. Record those separately:
    completion. Enable child completions and repeat with a child session.
 4. Switch away from VS Code for OS mode, return for app mode, and check sound.
 5. Launch two OpenCode terminals from the command and verify the jump-back target.
-6. Open another remote VS Code window and confirm notifications stay with their
-   originating window. Reload one window and refresh only its terminals.
+6. In default `both` mode, work in window B and trigger from A. Verify one app alert
+   in B and one native toast. Both **Open OpenCode** actions must foreground A and
+   select its exact originating terminal. Repeat from Notification Center after
+   the banner disappears, with two npm-launched `node` terminals in one directory.
+7. Repeat across named profiles, with no focused window, disabled settings, source
+   exit, closed terminals and presenter reload. Refresh terminals after reload.
+8. On Windows run `npm run test:windows` from Windows Node in this checkout. Record
+   real callback/foreground outcomes separately from Linux socket tests. A headless
+   run, submitted toast, or synthetic pipe callback does not establish visual acceptance.
+   Use `-- --automate` for task-scoped UI Automation. `-- --automate --center-only`
+   diagnoses Notification Center callbacks but does not pass banner acceptance.
+   The harness reports Do not disturb without changing it.
+9. On Windows, `OPENCODE_NOTIFY_SMOKE_NATIVE=both npm run test:multiwindow` checks
+   real banner and delayed Notification Center actions against the exact source
+   terminal in two windows. Use `OPENCODE_NOTIFY_SMOKE_PROFILES=1` for named profiles.
+   Environment variable syntax depends on the shell. An explicit
+   `VSCODE_TEST_EXECUTABLE` can select an isolated installation;
+   `VSCODE_TEST_APP_ROOT` disambiguates installations containing pending builds.
+   Inputs are staged in local temporary storage so Electron does not need UNC
+   security exceptions. Native mode `center` is diagnostic only.
 
 Store observed counts and platform outcomes in dated evidence, not this guide.
 

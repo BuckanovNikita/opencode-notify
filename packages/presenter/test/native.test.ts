@@ -3,8 +3,6 @@ import { test } from 'node:test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, delimiter } from 'node:path';
-import { createRequire } from 'node:module';
-import notifier from 'node-notifier';
 import { nativeNotification, desktopNotification } from '../src/native.js';
 
 test('Linux native adapter passes hostile text as literal argv', { skip: process.platform !== 'linux' }, async t => {
@@ -27,18 +25,15 @@ test('Linux native adapter passes hostile text as literal argv', { skip: process
   assert.ok(args.includes('--hint=boolean:suppress-sound:true'));
 });
 
-test('Windows dependency launch errors cannot silently count as delivered', async t => {
-  // Exercise the actual v10 WindowsToaster parser, which drops non--1 launch errors.
-  const require = createRequire(import.meta.url);
-  const utils = require('node-notifier/lib/utils') as {
-    createNamedPipe(server: unknown): Promise<Buffer | undefined>;
-    fileCommand(path: string, args: string[], callback: (error: NodeJS.ErrnoException) => void): void;
-  };
-  t.mock.method(utils, 'createNamedPipe', async () => undefined);
-  t.mock.method(utils, 'fileCommand', (_path: string, _args: string[], callback: (error: NodeJS.ErrnoException) => void) => {
-    callback(Object.assign(new Error('Helper missing'), { code: 'ENOENT' }));
+test('macOS backend reports failures and activates successful clicks', async () => {
+  const notification = { version: 1 as const, id: 'mac-test', event: 'complete' as const, sessionId: 's1',
+    project: 'demo', directory: '/demo', title: 'Test', message: 'Done', occurredAt: 1000 };
+  await assert.rejects(desktopNotification(notification, false, assert.fail, 'darwin', {
+    notify(_options, callback) { callback(new Error('Helper missing'), ''); }
+  }), /Helper missing/);
+  let clicks = 0;
+  await desktopNotification(notification, true, () => clicks++, 'darwin', {
+    notify(options, callback) { assert.equal(options.sound, true); callback(null, 'activate'); }
   });
-  await assert.rejects(desktopNotification({ version: 1, id: 'windows-test', event: 'complete', sessionId: 's1',
-    project: 'demo', directory: '/demo', title: 'Test', message: 'Done', occurredAt: 1000 }, false,
-  assert.fail, 'win32', new notifier.WindowsToaster()), /confirmation|helper/i);
+  assert.equal(clicks, 1);
 });

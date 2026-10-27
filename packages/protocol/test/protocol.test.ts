@@ -28,3 +28,43 @@ test('wire parser copies supported data and strips unexpected properties', () =>
   const parsed = parseNotification({ ...example, command: 'do not execute', token: 'secret' });
   assert.deepEqual(parsed, example);
 });
+
+test('optional source identity and both mode survive notification validation', () => {
+  assert.deepEqual(parseNotification({ ...example, instanceId: 'instance', sessionTitle: 'Work', display: 'both' }),
+    { ...example, instanceId: 'instance', sessionTitle: 'Work', display: 'both' });
+});
+
+test('source registration is bounded, strips unknown data and validates process identity', async () => {
+  const protocol = await import('../src/index.js');
+  assert.equal(typeof protocol.parseSourceRegistration, 'function');
+  const source = { version: 1, instanceId: 'i', pid: 120, parentPid: 12, startedAt: 1000,
+    directory: '/same/project', terminalId: 'created' };
+  assert.deepEqual(protocol.parseSourceRegistration({ ...source, command: 'forbidden' }), source);
+  for (const invalid of [{ pid: 0 }, { pid: 1.5 }, { parentPid: -1 }, { startedAt: NaN },
+    { instanceId: '' }, { directory: 'x'.repeat(4097) }, { version: 2 }]) {
+    assert.throws(() => protocol.parseSourceRegistration({ ...source, ...invalid }));
+  }
+});
+
+test('relay and activation contracts contain only opaque validated targets', async () => {
+  const protocol = await import('../src/index.js');
+  assert.equal(typeof protocol.parseRelay, 'function');
+  const relay = { version: 1, notification: example, origin: { peerId: 'source', targetId: 'random' } };
+  assert.deepEqual(protocol.parseRelay({ ...relay, url: 'http://remote' }), relay);
+  assert.deepEqual(protocol.parseActivation({ version: 1, targetId: 'random', command: 'anything' }),
+    { version: 1, targetId: 'random' });
+  assert.throws(() => protocol.parseRelay({ ...relay, origin: { peerId: '', targetId: 't' } }));
+  assert.throws(() => protocol.parseActivation({ version: 1, targetId: '' }));
+});
+
+test('focus target accepts legacy presenter hints without inventing a source', async () => {
+  const protocol = await import('../src/index.js');
+  assert.equal(typeof protocol.parseFocusTarget, 'function');
+  const target = protocol.parseFocusTarget({ terminalId: 'created', directory: '/project' });
+  assert.equal(target.terminalId, 'created'); assert.equal(target.directory, '/project');
+  assert.equal(target.instanceId, undefined);
+  assert.equal(protocol.parseFocusTarget({ directory: '/project' }).terminalId, undefined);
+  assert.equal(protocol.parseFocusTarget({ ...example, instanceId: 'registered' }).instanceId, 'registered');
+  assert.throws(() => protocol.parseFocusTarget({ terminalId: '\u001b' }));
+  assert.throws(() => protocol.parseFocusTarget({ version: 2, terminalId: 'created' }));
+});

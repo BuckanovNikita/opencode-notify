@@ -2,7 +2,11 @@
   "name": "opencode-notify-smoke-harness",
   "publisher": "opencode-notify-tests",
   "version": "0.0.0",
-  "engines": { "vscode": "^1.93.0" },
+  "engines": {
+    "vscode": "^1.143.1"
+  },
   "main": "./empty.cjs",
-  "activationEvents": []
+  "activationEvents": [
+    "*"
+  ]
 }

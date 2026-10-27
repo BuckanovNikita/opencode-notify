@@ -1,8 +1,8 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { MAX_BODY_BYTES, parseNotification, type Notification } from '../../protocol/src/index.js';
+import { MAX_BODY_BYTES, parseNotification, parseSourceRegistration, type SourceRegistration, type Notification } from '../../protocol/src/index.js';
 
-interface Options { deliver(notification: Notification): Promise<void>; log(message: string): void }
+interface Options { deliver(notification: Notification): Promise<void>; log(message: string): void; register?(source: SourceRegistration): Promise<void> }
 
 function authorized(header: string | undefined, token: string): boolean {
   const actual = Buffer.from(header || '');
@@ -24,7 +24,7 @@ export async function startRouter(options: Options) {
     request.setTimeout(5000, () => request.destroy());
     if (!authorized(request.headers.authorization, token)) { reply(response, 401, 'Unauthorized'); request.resume(); return; }
     if (request.headers.origin) { reply(response, 403, 'Browser requests are not accepted'); request.resume(); return; }
-    if (request.method !== 'POST' || request.url !== '/notify') { reply(response, 404, 'Not found'); request.resume(); return; }
+    if (request.method !== 'POST' || (request.url !== '/notify' && request.url !== '/sources')) { reply(response, 404, 'Not found'); request.resume(); return; }
     if (!request.headers['content-type']?.toLowerCase().startsWith('application/json')) {
       reply(response, 415, 'Expected application/json'); request.resume(); return;
     }
@@ -46,6 +46,14 @@ export async function startRouter(options: Options) {
         });
       } catch (error) {
         if (!response.destroyed) reply(response, error instanceof RangeError ? 413 : 400, 'Invalid request body');
+        return;
+      }
+      if (request.url === '/sources') {
+        let source: SourceRegistration;
+        try { source = parseSourceRegistration(JSON.parse(body)); }
+        catch { reply(response, 400, 'Invalid source'); return; }
+        try { await options.register?.(source); reply(response, 202, 'Accepted'); }
+        catch { options.log('Source registration failed'); reply(response, 503, 'Source registration unavailable'); }
         return;
       }
       let notification: Notification;

@@ -2,7 +2,7 @@ export const PROTOCOL_VERSION = 1;
 export const MAX_BODY_BYTES = 65_536;
 export const EVENT_KINDS = ['complete', 'question', 'permission', 'error', 'subagent_complete'] as const;
 export type NotificationKind = (typeof EVENT_KINDS)[number];
-export type DisplayMode = 'auto' | 'app' | 'system';
+export type DisplayMode = 'auto' | 'app' | 'system' | 'both';
 
 export interface Notification {
   version: 1;
@@ -15,6 +15,8 @@ export interface Notification {
   message: string;
   occurredAt: number;
   terminalId?: string;
+  instanceId?: string;
+  sessionTitle?: string;
   display?: DisplayMode;
 }
 
@@ -55,8 +57,10 @@ export function parseNotification(value: unknown): Notification {
     occurredAt: value.occurredAt,
   };
   if (value.terminalId !== undefined) result.terminalId = text(value.terminalId, 'terminalId', 256);
+  if (value.instanceId !== undefined) result.instanceId = text(value.instanceId, 'instanceId', 256);
+  if (value.sessionTitle !== undefined) result.sessionTitle = text(value.sessionTitle, 'sessionTitle', 1024);
   if (value.display !== undefined) {
-    if (typeof value.display !== 'string' || !['auto', 'app', 'system'].includes(value.display)) throw new Error('Invalid notification display mode');
+    if (typeof value.display !== 'string' || !['auto', 'app', 'system', 'both'].includes(value.display)) throw new Error('Invalid notification display mode');
     result.display = value.display as DisplayMode;
   }
   return result;
@@ -65,4 +69,63 @@ export function parseNotification(value: unknown): Notification {
 /** Prevent control sequences and pathological session titles from reaching UIs. */
 export function cleanText(value: string, max: number): string {
   return value.replace(/[\x00-\x1f\x7f]/gu, ' ').trim().slice(0, max);
+}
+
+/** Process start is epoch milliseconds, estimated from runtime uptime at startup. */
+export interface SourceRegistration {
+  version: 1;
+  instanceId: string;
+  pid: number;
+  parentPid: number;
+  startedAt: number;
+  directory: string;
+  terminalId?: string;
+}
+
+export function parseSourceRegistration(value: unknown): SourceRegistration {
+  if (!isRecord(value) || value.version !== 1) throw new Error('Unsupported source protocol');
+  if (!Number.isSafeInteger(value.pid) || (value.pid as number) <= 0 ||
+      !Number.isSafeInteger(value.parentPid) || (value.parentPid as number) < 0 ||
+      typeof value.startedAt !== 'number' || !Number.isFinite(value.startedAt) || value.startedAt < 0) {
+    throw new Error('Invalid source process identity');
+  }
+  const result: SourceRegistration = {
+    version: 1, instanceId: text(value.instanceId, 'instanceId', 256),
+    pid: value.pid as number, parentPid: value.parentPid as number, startedAt: value.startedAt,
+    directory: text(value.directory, 'directory', 4096, true),
+  };
+  if (value.terminalId !== undefined) result.terminalId = text(value.terminalId, 'terminalId', 256);
+  return result;
+}
+
+export interface Activation { version: 1; targetId: string }
+export interface Relay {
+  version: 1;
+  notification: Notification;
+  origin: { peerId: string; targetId: string };
+}
+
+export function parseActivation(value: unknown): Activation {
+  if (!isRecord(value) || value.version !== 1) throw new Error('Unsupported activation protocol');
+  return { version: 1, targetId: text(value.targetId, 'targetId', 256) };
+}
+
+export function parseRelay(value: unknown): Relay {
+  if (!isRecord(value) || value.version !== 1 || !isRecord(value.origin)) throw new Error('Unsupported relay protocol');
+  return { version: 1, notification: parseNotification(value.notification), origin: {
+    peerId: text(value.origin.peerId, 'peerId', 256), targetId: text(value.origin.targetId, 'targetId', 256),
+  } };
+}
+
+export type FocusTarget = Pick<Notification, 'instanceId' | 'terminalId' | 'project' | 'sessionId' | 'sessionTitle' | 'directory'>;
+
+/** Older presenters pass only terminalId/directory to the private focus command. */
+export function parseFocusTarget(value: unknown): FocusTarget {
+  if (!isRecord(value)) throw new Error('Invalid focus target');
+  if (value.version !== undefined) return parseNotification(value);
+  return {
+    project: 'OpenCode', sessionId: 'Registered terminal',
+    directory: value.directory === undefined ? '' : text(value.directory, 'directory', 4096, true),
+    ...(value.terminalId === undefined ? {} : { terminalId: text(value.terminalId, 'terminalId', 256) }),
+  };
 }

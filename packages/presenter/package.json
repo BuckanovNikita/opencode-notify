@@ -1,9 +1,9 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "buckanovnikita",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.93.0"
+    "vscode": "^1.143.1"
   },
   "categories": [
     "Other"
@@ -29,7 +29,8 @@
   "api": "none",
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:opencodeNotify.deliver"
+    "onCommand:opencodeNotify.deliver",
+    "onUri"
   ],
   "dependencies": {
     "node-notifier": "10.0.1"
@@ -62,16 +63,18 @@
         "opencodeNotify.systemNotifications": {
           "type": "string",
           "enum": [
+            "both",
             "auto",
             "app",
             "system"
           ],
           "enumDescriptions": [
+            "One OS notification from the source window and a VS Code alert in the focused enabled window.",
             "VS Code while focused, OS while unfocused.",
             "Always use VS Code notifications.",
             "Attempt OS notifications, with VS Code fallback."
           ],
-          "default": "auto",
+          "default": "both",
           "scope": "window",
           "description": "Choose where notifications appear."
         },

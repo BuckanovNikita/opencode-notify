@@ -43,3 +43,27 @@ test('transport refuses non-loopback endpoints before sending credentials', asyn
   await assert.rejects(createTransport('https://example.com/notify', 'secret', fakeFetch)(note), /loopback/);
   assert.equal(fetched, false);
 });
+
+test('source registration requires authentication and validates before invoking callback', async t => {
+  const received: unknown[] = [];
+  const router = await startRouter({ deliver: async () => {}, register: async source => { received.push(source); }, log: () => {} });
+  t.after(() => router.close());
+  const url = new URL('/sources', router.url);
+  const source = { version: 1, instanceId: 'instance-a', pid: 30, parentPid: 20, startedAt: 3000, directory: '/demo' };
+  const headers = { Authorization: `Bearer ${router.token}`, 'Content-Type': 'application/json' };
+  assert.equal((await fetch(url, { method: 'POST', body: JSON.stringify(source) })).status, 401);
+  assert.equal((await fetch(url, { method: 'POST', headers, body: JSON.stringify({ ...source, pid: -1 }) })).status, 400);
+  assert.equal((await fetch(url, { method: 'POST', headers, body: JSON.stringify(source) })).status, 202);
+  assert.deepEqual(received, [source]);
+});
+
+test('registration failure remains nonfatal to notification forwarding', async t => {
+  let deliveries = 0;
+  const router = await startRouter({ deliver: async () => { deliveries++; }, register: async () => { throw new Error('inspection unavailable'); }, log: () => {} });
+  t.after(() => router.close());
+  const headers = { Authorization: `Bearer ${router.token}`, 'Content-Type': 'application/json' };
+  const source = { version: 1, instanceId: 'instance-a', pid: 30, parentPid: 20, startedAt: 3000, directory: '/demo' };
+  assert.equal((await fetch(new URL('/sources', router.url), { method: 'POST', headers, body: JSON.stringify(source) })).status, 503);
+  await createTransport(router.url, router.token)(note);
+  assert.equal(deliveries, 1);
+});

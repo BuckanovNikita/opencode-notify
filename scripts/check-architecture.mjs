@@ -6,8 +6,9 @@ import ts from 'typescript';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const allowed = {
   protocol: new Set(), plugin: new Set(['node:crypto', 'node:fs/promises', 'node:os', 'node:path']),
-  router: new Set(['node:crypto', 'node:fs/promises', 'node:http', 'node:os', 'node:path', 'vscode']),
-  presenter: new Set(['node:child_process', 'node:util', 'node-notifier', 'vscode']),
+  router: new Set(['node:crypto', 'node:fs/promises', 'node:http', 'node:os', 'node:path', 'node:child_process', 'node:util', 'vscode']),
+  presenter: new Set(['node:child_process', 'node:util', 'node-notifier', 'vscode',
+    'node:crypto', 'node:fs/promises', 'node:path', 'node:http', 'node:net']),
 };
 
 export function violations(file, source) {
@@ -52,8 +53,12 @@ export function check() {
     ['packages/plugin/src/probe.ts', "import '../../router/src/server.js';"],
     ['packages/router/src/probe.ts', "await import('../../presenter/src/native.js');"],
     ['packages/presenter/src/probe.ts', "import type { X } from '../../../tests/helpers.js';"],
+    ['packages/protocol/src/probe.ts', "import type { Server } from 'node:net';"],
+    ['packages/plugin/src/probe.ts', "import { execFile } from 'node:child_process';"],
+    ['packages/presenter/src/probe.ts', "import '../../router/src/sources.js';"],
+    ['packages/router/src/probe.ts', "export { x } from '../../presenter/src/peers.js';"],
   ]) if (violations(file, code).length === 0) errors.push(`Negative probe was incorrectly accepted: ${file}`);
   if (errors.length) throw new Error(errors.join('\n'));
-  console.log('Production import contracts and four negative probes passed.');
+  console.log('Production import contracts and eight negative probes passed.');
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) check();

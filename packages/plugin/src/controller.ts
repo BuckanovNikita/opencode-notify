@@ -63,12 +63,13 @@ export function createController(deps: Dependencies) {
       permission: 'Permission required', error: 'Agent error', subagent_complete: 'Subagent completed',
     };
     const notification: Notification = {
-      version: 1, id: `${deps.instanceId}:${++counter}`, event: kind, sessionId: id,
+      version: 1, id: `${deps.instanceId}:${++counter}`, event: kind, sessionId: id, instanceId: deps.instanceId,
       project, directory: cleanText(deps.directory, 4096),
       title: deps.config.showProjectName ? `OpenCode · ${project}` : 'OpenCode',
       message: `${labels[kind]}${sessionTitle ? ` · ${sessionTitle}` : ''}`,
       occurredAt: deps.now(), display: deps.config.display,
       ...(deps.terminalId ? { terminalId: deps.terminalId } : {}),
+      ...(sessionTitle ? { sessionTitle } : {}),
     };
     try { await deps.send(notification); }
     catch (error) { deps.log(`Notification delivery failed: ${error instanceof Error ? error.message : String(error)}`); }

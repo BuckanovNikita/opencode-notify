@@ -1,33 +1,90 @@
 import * as vscode from 'vscode';
 import { COMMANDS, EVENT_KINDS, isRecord, parseNotification, type DisplayMode, type Notification } from '../../protocol/src/index.js';
-import { createPresenter } from './policy.js';
-import { nativeNotification } from './native.js';
+import { createPresenter, notificationLabel, notificationSeverity } from './policy.js';
+import { createPeers, sharedPeerDirectory } from './peers.js';
+import { createActivationTargets, createForegroundWindow } from './activation.js';
+import { createNativeNotifications } from './native.js';
 import { createRouterSetup, newestVersion, routerVersionFromList } from './setup.js';
 
 export function activate(context: vscode.ExtensionContext) {
   const output = vscode.window.createOutputChannel('OpenCode Notify');
   context.subscriptions.push(output);
   const log = (message: string) => output.appendLine(`${new Date().toISOString()} ${message}`);
-  const focus = (notification: Notification) => {
-    void vscode.commands.executeCommand(COMMANDS.focus, {
-      terminalId: notification.terminalId, directory: notification.directory,
-    }).then(undefined, error => log(`Could not focus remote terminal: ${String(error)}`));
+  let alive = true;
+  context.subscriptions.push({ dispose: () => { alive = false; } });
+  const options = () => {
+    const config = vscode.workspace.getConfiguration('opencodeNotify');
+    return { enabled: alive && config.get<boolean>('enabled', true), trusted: vscode.workspace.isTrusted,
+      mode: config.get<DisplayMode>('systemNotifications', 'both'), focused: vscode.window.state.focused,
+      sound: config.get<boolean>('sound', true),
+      events: Object.fromEntries(EVENT_KINDS.map(kind => [kind, config.get<boolean>(`events.${kind}`, true)])) };
+  };
+  const targets = createActivationTargets({
+    foreground: createForegroundWindow({
+      focused: () => vscode.window.state.focused,
+      commands: () => vscode.commands.getCommands(true),
+      execute: command => vscode.commands.executeCommand(command), log,
+    }),
+    focus: async notification => {
+      if (!options().enabled || !vscode.workspace.isTrusted) return;
+      await vscode.commands.executeCommand(COMMANDS.focus, notification);
+    },
+    uri: async targetId => (await vscode.env.asExternalUri(vscode.Uri.from({
+      scheme: vscode.env.uriScheme, authority: context.extension.id, path: '/activate', query: `target=${encodeURIComponent(targetId)}`,
+    }))).toString(),
+    open: async uri => vscode.env.openExternal(vscode.Uri.parse(uri)),
+  });
+  context.subscriptions.push(targets);
+  context.subscriptions.push(vscode.window.registerUriHandler({ handleUri: uri => {
+    if (uri.path !== '/activate') return;
+    const target = new URLSearchParams(uri.query).get('target');
+    if (target) void targets.resume(target).catch(error => log(`Origin terminal activation failed: ${String(error)}`));
+  } }));
+  const localTargets = new Map<string, string>();
+  const originTarget = (notification: Notification) => {
+    let id = localTargets.get(notification.id);
+    if (!id) {
+      id = targets.register(notification); localTargets.set(notification.id, id);
+      if (localTargets.size > 4096) localTargets.delete(localTargets.keys().next().value!);
+    }
+    return id;
+  };
+  const native = createNativeNotifications(context.asAbsolutePath(
+    `node_modules/node-notifier/vendor/snoreToast/snoretoast-${process.arch === 'ia32' ? 'x86' : 'x64'}.exe`), log);
+  context.subscriptions.push(native);
+  const activateLocal = (targetId: string) => {
+    void targets.activate(targetId).catch(error => log(`Could not open OpenCode origin: ${String(error)}`));
   };
   const presenter = createPresenter({
-    options: () => {
-      const config = vscode.workspace.getConfiguration('opencodeNotify');
-      return { enabled: config.get<boolean>('enabled', true), mode: config.get<DisplayMode>('systemNotifications', 'auto'),
-        focused: vscode.window.state.focused, sound: config.get<boolean>('sound', true),
-        events: Object.fromEntries(EVENT_KINDS.map(kind => [kind, config.get<boolean>(`events.${kind}`, true)])) };
-    },
-    app: notification => {
-      const show = notification.event === 'error' ? vscode.window.showErrorMessage : vscode.window.showInformationMessage;
-      void show(`${notification.title}: ${notification.message}`, 'Open terminal').then(action => {
-        if (action === 'Open terminal') focus(notification);
+    options,
+    app: (notification, origin) => {
+      const severity = notificationSeverity(notification);
+      const show = severity === 'error' ? vscode.window.showErrorMessage :
+        severity === 'warning' ? vscode.window.showWarningMessage : vscode.window.showInformationMessage;
+      void show(`${notificationLabel(notification)}: ${notification.message}`, 'Open OpenCode').then(action => {
+        if (action !== 'Open OpenCode') return;
+        if (origin) void peersReady.then(async peer => {
+          if (!peer || !await peer.activate(origin)) log('The notification origin is no longer available');
+        }).catch(error => log(`Origin activation failed: ${String(error)}`));
+        else activateLocal(originTarget(notification));
       }, error => log(`VS Code notification failed: ${String(error)}`));
     },
-    system: (notification, sound) => nativeNotification(notification, sound, () => focus(notification)), log,
+    relay: async notification => {
+      const peer = await peersReady;
+      if (!peer) return false;
+      return peer.relay({ version: 1, notification, origin: { peerId: peer.id, targetId: originTarget(notification) } });
+    },
+    system: (notification, sound) => {
+      const targetId = originTarget(notification);
+      return native.notify({ ...notification, title: notificationLabel(notification) }, sound, () => activateLocal(targetId));
+    }, log,
   });
+  const peersReady = (async () => createPeers({
+    directory: sharedPeerDirectory(context.globalStorageUri.fsPath),
+    available: () => { const current = options(); return current.enabled && current.trusted && current.focused; },
+    receive: value => presenter.receive(value), activate: targetId => targets.activate(targetId), log,
+  }))().catch(error => { log(`Local peer discovery unavailable: ${String(error)}`); return undefined; });
+  context.subscriptions.push({ dispose: () => { void peersReady.then(peer => peer?.dispose()).catch(error => log(`Peer shutdown failed: ${String(error)}`)); } });
   context.subscriptions.push(vscode.commands.registerCommand(COMMANDS.deliver, (value: unknown) => {
     const notification = parseNotification(value);
     void presenter.deliver(notification).catch(error => log(`Presentation failed: ${String(error)}`));

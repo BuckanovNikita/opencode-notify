@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { isRecord } from '../../protocol/src/index.js';
+import { cleanText, isRecord } from '../../protocol/src/index.js';
 import { loadConfig } from './config.js';
 import { createController, type SessionInfo } from './controller.js';
-import { createTransport } from './transport.js';
+import { createSourceTransport, createTransport } from './transport.js';
 
 // Structural types keep the bundle compatible with the v1 plugin ABI without a runtime SDK.
 interface Context {
@@ -24,9 +24,20 @@ export async function OpenCodeNotify({ directory, client }: Context) {
   try {
     const config = await loadConfig();
     if (!config.enabled) return {};
+    const instanceId = randomUUID();
+    const terminalId = process.env.OPENCODE_NOTIFY_TERMINAL_ID;
+    try {
+      await createSourceTransport(process.env.OPENCODE_NOTIFY_URL, process.env.OPENCODE_NOTIFY_TOKEN)({
+        version: 1, instanceId, pid: process.pid, parentPid: process.ppid,
+        startedAt: Date.now() - process.uptime() * 1000, directory: cleanText(directory, 4096),
+        ...(terminalId ? { terminalId } : {}),
+      });
+    } catch (error) {
+      log(`Source registration failed; notifications remain enabled: ${error instanceof Error ? error.message : String(error)}`);
+    }
     const controller = createController({
-      config, directory, instanceId: randomUUID(), now: Date.now,
-      ...(process.env.OPENCODE_NOTIFY_TERMINAL_ID ? { terminalId: process.env.OPENCODE_NOTIFY_TERMINAL_ID } : {}),
+      config, directory, instanceId, now: Date.now,
+      ...(terminalId ? { terminalId } : {}),
       send: createTransport(process.env.OPENCODE_NOTIFY_URL, process.env.OPENCODE_NOTIFY_TOKEN), log,
       session: async id => {
         const response = await client.session.get({ path: { id }, signal: AbortSignal.timeout(1500) });

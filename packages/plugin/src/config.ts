@@ -34,7 +34,7 @@ export function parseConfig(value: unknown): PluginConfig {
     result.minDurationMs = value.minDurationMs;
   }
   if (value.display !== undefined) {
-    if (typeof value.display !== 'string' || !['auto', 'app', 'system'].includes(value.display)) throw new Error('Invalid display mode');
+    if (typeof value.display !== 'string' || !['auto', 'app', 'system', 'both'].includes(value.display)) throw new Error('Invalid display mode');
     result.display = value.display as DisplayMode;
   }
   if (value.events !== undefined) {
