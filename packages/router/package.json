@@ -1,9 +1,9 @@
 {
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "buckanovnikita",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.143.1"
+    "vscode": "^1.90.0"
   },
   "categories": [
     "Other"
@@ -22,7 +22,7 @@
   },
   "name": "opencode-notify-router",
   "displayName": "OpenCode Notify Router",
-  "description": "Workspace bridge and installer for the OpenCode v1 notification plugin",
+  "description": "Workspace bridge and installer for the OpenCode v1 and v2 notification plugin",
   "extensionKind": [
     "workspace"
   ],
@@ -35,7 +35,7 @@
     "commands": [
       {
         "command": "opencodeNotify.installPlugin",
-        "title": "OpenCode Notify: Install or Update OpenCode v1 Plugin"
+        "title": "OpenCode Notify: Install or Update OpenCode Plugin"
       },
       {
         "command": "opencodeNotify.start",
@@ -53,7 +53,7 @@
           "type": "boolean",
           "default": true,
           "scope": "machine",
-          "description": "Automatically install the OpenCode v1 plugin when absent. Existing differing files are preserved; use Install or Update OpenCode v1 Plugin to replace them."
+          "description": "Automatically install the OpenCode plugin when absent. Existing differing files are preserved; use Install or Update OpenCode Plugin to replace them."
         }
       }
     }

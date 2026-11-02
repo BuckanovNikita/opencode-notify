@@ -55,7 +55,7 @@ try {
   await mkdir(join(userData, 'User'), { recursive: true }); await mkdir(join(task, 'source'));
   await writeFile(join(userData, 'User', 'settings.json'), JSON.stringify({
     'opencodeNotify.systemNotifications': 'both', 'opencodeNotify.sound': false,
-    'workbench.startupEditor': 'none', 'window.title': '${rootName}', 'security.workspace.trust.enabled': false,
+    'workbench.startupEditor': 'none', 'window.dialogStyle': 'custom', 'window.title': '${rootName}', 'security.workspace.trust.enabled': false,
   }));
   await writeFile(join(task, 'source', 'package.json'), JSON.stringify({ scripts: { source: 'node source.cjs' } }));
   await writeFile(join(task, 'source', 'source.cjs'), `
@@ -162,7 +162,11 @@ const fs=require('node:fs');
       const dialog=document.querySelector('.monaco-dialog-box'); if(!dialog)return false;
       const values=Array.from(dialog.querySelectorAll('a,[title],[aria-label]')).flatMap(link=>[link.href,link.title,link.getAttribute('data-href'),link.getAttribute('aria-label')]).filter(Boolean);
       const exact=values.some(value=>{try{const uri=new URL(value);return uri.protocol==='vscode:'&&uri.hostname==='buckanovnikita.opencode-notify'&&uri.pathname==='/activate'&&/target=[a-f0-9-]{36}/.test(decodeURIComponent(uri.search));}catch{return false;}});
-      if(!exact)return false;
+      // VS Code 1.90 displays only first 30 and last 5 URI characters in plain text.
+      // This fixture owns the isolated profile and has only one pending origin action.
+      const shortened=dialog.textContent.includes("Allow 'OpenCode Notify' extension to open this URI?")&&
+        dialog.querySelector('.dialog-message-detail')?.textContent.startsWith('vscode://buckanovnikita.opencode-notify'.slice(0,30)+'...');
+      if(!exact&&!shortened)return false;
       const open=Array.from(dialog.querySelectorAll('button,a,.monaco-button')).find(button=>button.textContent.trim()==='Open');if(!open)return false;open.click();return true;
     })()`);
     if (consentOpened) break;

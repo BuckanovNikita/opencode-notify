@@ -5,7 +5,7 @@ import { once } from 'node:events';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { OpenCodeNotify } from '../src/index.js';
+import plugin from '../src/index.js';
 import { parseNotification, parseSourceRegistration } from '../../protocol/src/index.js';
 
 for (const sourceStatus of [200, 404]) {
@@ -34,7 +34,7 @@ for (const sourceStatus of [200, 404]) {
     const logs: string[] = [];
     const client = { session: { get: async () => ({ data: { title: 'Same project session' } }) },
       app: { log: async (input: { body: { message: string } }) => { logs.push(input.body.message); } } };
-    const hooks = await OpenCodeNotify({ directory: '/same/project', client });
+    const hooks = await plugin.server({ directory: '/same/project', client });
     assert.equal(requests[0]?.path, '/sources');
     const source = parseSourceRegistration(requests[0]?.body);
     assert.equal(source.pid, process.pid); assert.equal(source.parentPid, process.ppid);
@@ -46,7 +46,7 @@ for (const sourceStatus of [200, 404]) {
     const note = parseNotification(requests[1]?.body);
     assert.equal(note.instanceId, source.instanceId); assert.equal(note.sessionTitle, 'Same project session');
     assert.equal(logs.some(message => message.includes('Source registration failed')), sourceStatus !== 200);
-    const second = await OpenCodeNotify({ directory: '/same/project', client });
+    const second = await plugin.server({ directory: '/same/project', client });
     assert.ok(second.event);
     assert.notEqual(parseSourceRegistration(requests[2]?.body).instanceId, source.instanceId);
   });

@@ -1,6 +1,6 @@
 # OpenCode Notify
 
-Уведомления для **OpenCode v1**, запущенного локально, через VS Code Remote SSH,
+Уведомления для **OpenCode v1/v2**, запущенного локально, через VS Code Remote SSH,
 WSL, Dev Containers или Remote Tunnels. Уведомления появляются на компьютере с VS Code:
 по умолчанию — в активном окне редактора и одним системным уведомлением.
 Кнопка **Open OpenCode** возвращает к исходному окну и консоли OpenCode.
@@ -17,9 +17,9 @@ WSL, Dev Containers или Remote Tunnels. Уведомления появляю
 
 ## Установка из VSIX
 
-Скачайте `opencode-notify-0.3.0.vsix` из
-[GitHub Releases](https://github.com/BuckanovNikita/opencode-notify/releases)
-и установите через **Extensions: Install from VSIX...** на локальном компьютере
+Скачайте `opencode-notify-0.4.0.vsix` из артефактов успешного
+[GitHub Actions](https://github.com/BuckanovNikita/opencode-notify/actions)
+для тега `v0.4.0` либо соберите через `npm run package`. Установите через **Extensions: Install from VSIX...** на локальном компьютере
 (раздел **Local — Installed**).
 
 Откройте доверенную рабочую область локально или через SSH, WSL, Dev Containers,
@@ -39,7 +39,7 @@ Marketplace, доступ удалённого хоста к GitHub и отде�
 `~/.config/opencode/plugins/opencode-notify.js`, учитывая `XDG_CONFIG_HOME`.
 Другие плагины и `opencode.json` не меняются. Совпадающий файл повторно не пишется;
 любой отличающийся существующий файл сохраняется, включая старую версию плагина.
-Для обновления выполните **OpenCode Notify: Install or Update OpenCode v1 Plugin**
+Для обновления выполните **OpenCode Notify: Install or Update OpenCode Plugin**
 и подтвердите замену. Перезапустите OpenCode после установки или обновления.
 Отключите старый плагин уведомлений, если он уже отправляет такие же события.
 
@@ -47,7 +47,7 @@ Marketplace, доступ удалённого хоста к GitHub и отде�
 `opencodeNotify.autoInstallRouter: false`, плагина — через
 `opencodeNotify.autoInstallPlugin: false` на хосте рабочей области. Это не удаляет
 уже установленные компоненты. В недоверенных рабочих областях установка не запускается.
-Для ручного режима установите `opencode-notify-router-0.3.0.vsix` на хост рабочей
+Для ручного режима установите `opencode-notify-router-0.4.0.vsix` на хост рабочей
 области и выполните команду установки плагина. Повторить автонастройку Router можно
 командой **OpenCode Notify: Set Up Workspace** после включения автоустановки.
 
@@ -79,7 +79,7 @@ Marketplace, доступ удалённого хоста к GitHub и отде�
 Вопросы и разрешения показываются как предупреждения, ошибки — как ошибки.
 Звук запрашивается для системных уведомлений; его поддержка зависит от ОС.
 
-## Настройки плагина OpenCode v1
+## Настройки плагина OpenCode v1/v2
 
 Создайте на хосте OpenCode файл `~/.config/opencode/opencode-notify.json`
 (или `$XDG_CONFIG_HOME/opencode/opencode-notify.json`):
@@ -139,13 +139,13 @@ OpenCode. Для фонового процесса сохраните окруж
 
 ## Совместимость и ограничения
 
-- VS Code 1.143.1 или новее; настольный клиент. Браузерный vscode.dev не поддерживается.
+- VS Code 1.90.0 или новее; настольный клиент. Браузерный vscode.dev не поддерживается.
 - Автонастройка рассчитана на хосты, поддерживаемые VS Code Remote, с доступным
   для записи каталогом конфигурации. Сам OpenCode и системные зависимости она не
   устанавливает. Обычный SSH вне VS Code не подключается автоматически.
-- OpenCode v1 с событиями `session.status`, `message.updated` и `question.asked`.
-  Поддержаны обе формы разрешений: `permission.updated` и `permission.asked`.
-  OpenCode v2 не поддерживается.
+- OpenCode v1.18.29+ или v2. В v1 используются события `session.status`,
+  `message.updated`, `question.asked` и обе формы разрешений. В v2 — публичные
+  события выполнения, разрешений и формы вопросов. Более ранние v1 не поддерживаются.
 - «Завершение» означает успешное окончание ответа/запуска, а не закрытие процесса.
 - Окно VS Code и удалённое соединение должны оставаться открытыми. Доставки после
   отключения и постоянной очереди уведомлений нет.

@@ -1,15 +1,16 @@
 # OpenCode Notify
 
-Локальный показ уведомлений OpenCode v1 в VS Code и операционной системе.
+Локальный показ уведомлений OpenCode v1/v2 в VS Code и операционной системе.
 При удалённой работе это расширение устанавливается на **локальном компьютере**.
 В доверенном окне расширение автоматически установит комплектный **OpenCode Notify
 Router** на хост рабочей области: SSH, WSL, Dev Containers, Remote Tunnels или локально.
 
-Оба VSIX доступны в [GitHub Releases](https://github.com/BuckanovNikita/opencode-notify/releases).
-Router автоматически устанавливает отсутствующий плагин OpenCode v1.
+Оба VSIX доступны в артефактах [GitHub Actions](https://github.com/BuckanovNikita/opencode-notify/actions)
+для соответствующего тега; локальная сборка — `npm run package`.
+Router автоматически устанавливает отсутствующий плагин OpenCode v1/v2.
 Выполните **OpenCode Notify: Test Connection** и откройте новый терминал OpenCode.
 Существующий отличающийся плагин сохраняется; обновление требует команды
-**OpenCode Notify: Install or Update OpenCode v1 Plugin** и подтверждения.
+**OpenCode Notify: Install or Update OpenCode Plugin** и подтверждения.
 
 Для повторной настройки: **OpenCode Notify: Set Up Workspace**. Отключение
 автоустановки Router: `opencodeNotify.autoInstallRouter: false` в пользовательских

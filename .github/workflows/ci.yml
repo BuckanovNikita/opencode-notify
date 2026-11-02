@@ -19,8 +19,28 @@ jobs:
       - run: npm audit --omit=dev
       - run: npm run package
       - run: npm run test:native
-      - run: xvfb-run -a npm run test:extension
       - uses: actions/upload-artifact@v4
         with:
           name: vsix
           path: artifacts/
+  compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        vscode: ['1.90.0', '1.143.1']
+    env:
+      VSCODE_TEST_VERSION: ${{ matrix.vscode }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run package
+      - run: xvfb-run -a npm run test:extension
+      - run: xvfb-run -a npm run test:multiwindow
+      - run: xvfb-run -a npm run test:multiwindow
+        env:
+          OPENCODE_NOTIFY_SMOKE_PROFILES: '1'

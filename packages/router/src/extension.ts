@@ -47,7 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
   shutdown = router.close;
   const env = context.environmentVariableCollection;
   env.persistent = false;
-  env.description = 'Routes OpenCode v1 notifications to this VS Code window. Restart terminals after reloading the window.';
+  env.description = 'Routes OpenCode notifications to this VS Code window. Restart terminals after reloading the window.';
   env.replace('OPENCODE_NOTIFY_URL', router.url);
   env.replace('OPENCODE_NOTIFY_TOKEN', router.token);
   context.subscriptions.push({ dispose: () => env.clear() });
@@ -101,7 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
         result = await installPlugin(source, destination, true);
       }
       log(`Plugin ${result}: ${destination}`);
-      void vscode.window.showInformationMessage('OpenCode v1 notification plugin is ready. Restart OpenCode in a fresh terminal.');
+      void vscode.window.showInformationMessage('OpenCode v1/v2 notification plugin is ready. Restart OpenCode in a fresh terminal.');
     } catch (error) {
       log(`Plugin installation failed: ${String(error)}`);
       void vscode.window.showErrorMessage('Could not install the OpenCode plugin. See OpenCode Notify Router output.');
@@ -113,11 +113,11 @@ export async function activate(context: vscode.ExtensionContext) {
       const result = await installPlugin(source, destination);
       log(`Automatic plugin installation ${result}: ${destination}`);
       if (result === 'conflict') {
-        void vscode.window.showWarningMessage('OpenCode Notify preserved an existing plugin with different contents. Run OpenCode Notify: Install or Update OpenCode v1 Plugin to review replacement.');
+        void vscode.window.showWarningMessage('OpenCode Notify preserved an existing plugin with different contents. Run OpenCode Notify: Install or Update OpenCode Plugin to review replacement.');
       }
     } catch (error) {
       log(`Automatic plugin installation failed: ${String(error)}`);
-      void vscode.window.showWarningMessage('OpenCode Notify could not install its OpenCode plugin. See Router output and run Install or Update OpenCode v1 Plugin to retry.');
+      void vscode.window.showWarningMessage('OpenCode Notify could not install its OpenCode plugin. See Router output and run Install or Update OpenCode Plugin to retry.');
     }
   };
   context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {

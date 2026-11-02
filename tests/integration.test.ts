@@ -10,7 +10,7 @@ import { startRouter } from '../packages/router/src/server.js';
 import { createPresenter } from '../packages/presenter/src/policy.js';
 import { installPlugin, OWNED_PLUGIN_MARKER } from '../packages/router/src/install.js';
 import type { Notification } from '../packages/protocol/src/index.js';
-import { OpenCodeNotify } from '../packages/plugin/src/index.js';
+import plugin from '../packages/plugin/src/index.js';
 
 test('plugin event -> authenticated HTTP -> presenter preserves session context', async t => {
   const displayed: Notification[] = [];
@@ -65,7 +65,7 @@ test('the v1 SDK receives the metadata timeout in its single options object', as
     await rm(dir, { recursive: true, force: true });
   });
   let received: unknown;
-  const hooks = await OpenCodeNotify({ directory: dir, client: {
+  const hooks = await plugin.server({ directory: dir, client: {
     session: { get: async options => { received = options; return { data: { id: 's1', title: 'SDK check' } }; } },
     app: { log: async () => {} },
   } });

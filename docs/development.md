@@ -3,8 +3,8 @@
 ## Runtime and modules
 
 Use Node >=22 and npm with the committed lockfiles. Extension bundles target
-Node 20 for VS Code >=1.143.1. OpenCode runs the standalone ESM plugin in its own v1
-runtime; neither OpenCode SDK is a runtime dependency.
+Node 20 for VS Code >=1.90.0. OpenCode v1.18.29+ and v2 run the standalone ESM plugin in their own
+runtimes; neither OpenCode SDK is a runtime dependency.
 
 Production modules live under `packages/{protocol,plugin,router,presenter}/src`.
 Only protocol may be shared between adapters. Protocol cannot import Node, VS Code
@@ -15,7 +15,11 @@ dependency only after updating the design and relevant executable boundary.
 The plugin emits completion only after both successful final assistant evidence
 and idle for the active run. It supports the two v1 permission event schemas and
 uses `question.asked` directly, avoiding duplicate before-tool notifications.
-The exported bundle must contain exactly one plugin function for old v1 loaders.
+The bundle exports one default definition with stable ID `opencode-notify`,
+v1 `server()` and v2 `setup()`. Older v1 loaders are unsupported. V2 subscribes to
+public execution outcomes, permissions and question forms, deduplicates event IDs,
+and aborts its subscription and active notification transport at unload. A human
+reply alone never emits completion. Notification formatting and transport are shared.
 
 The router owns loopback HTTP, terminal credentials and plugin filesystem writes.
 The presenter owns local UI, desktop effects and companion installation through
@@ -37,11 +41,11 @@ VSCODE_TEST_VERSION="${NOTIFY_CURRENT_VSCODE:?set an explicit current VS Code ve
 VSCODE_TEST_VERSION="${NOTIFY_CURRENT_VSCODE:?set an explicit current VS Code version}" xvfb-run -a npm run test:multiwindow
 ```
 
-Set `NOTIFY_CURRENT_VSCODE` to an explicit version from the official VS Code
-release notes. The multiwindow harness rejects the `stable` alias so a failed
+For the release compatibility matrix use `NOTIFY_CURRENT_VSCODE=1.143.1`;
+the default minimum is 1.90.0. Pin any additional version explicitly. The multiwindow harness rejects the `stable` alias so a failed
 network lookup cannot silently substitute a cached minimum version.
 On a desktop with a usable display, omit `xvfb-run`. The extension test downloads
-the minimum supported VS Code from the presenter manifest (currently 1.143.1) and installs only the presenter VSIX into temporary
+the minimum supported VS Code from the presenter manifest (currently 1.90.0) and installs only the presenter VSIX into temporary
 profiles. The presenter must install its bundled Router, which must create the
 plugin in an isolated XDG config directory. Separate profiles check Router opt-out,
 plugin opt-out and preservation of a pre-existing plugin. It also checks activation,
@@ -49,7 +53,8 @@ commands, request authentication, validation, prompt acceptance and terminal
 environment injection. It never uses the user's profile or OpenCode configuration.
 Use `VSCODE_TEST_VERSION` to explicitly test another VS Code version.
 
-`npm run test:native` downloads/runs an OpenCode v1.2.0 server through npm exec with isolated
+`npm run test:native` runs pinned OpenCode servers (`opencode-ai@1.18.29`,
+`opencode-ai@1.19.5`, `@opencode/cli@2.2.5`) through npm exec with isolated
 XDG directories and a local OpenAI-compatible fixture provider. It exercises real
 OpenCode completion events and the bundled plugin, without a paid model or user
 credentials. The model reply is synthetic; the plugin and OpenCode process are real.
@@ -128,7 +133,7 @@ Windows/macOS/Linux visual notification behavior. Record those separately:
 1. Install only presenter locally. Open a new trusted remote host and verify Router
    appears on that host, including when Router also exists on the local host.
 2. Verify the plugin appeared in that host's XDG config directory and start
-   OpenCode v1 in a fresh terminal. Check the opt-outs and manual recovery commands.
+   each supported OpenCode major in a fresh terminal. Check the opt-outs and manual recovery commands.
 3. Verify completion, question, permission and error; cancel a run and confirm no
    completion. Enable child completions and repeat with a child session.
 4. Switch away from VS Code for OS mode, return for app mode, and check sound.
@@ -162,24 +167,17 @@ Review the entire task diff, run applicable checks and obtain fresh independent
 review for substantive changes. Stage task-owned paths and use Conventional Commits.
 The architecture record and plan must match implementation and executed evidence.
 
-This repository has explicit authorization to publish GitHub Releases containing
-the VSIX deliverables requested by the user. This exception does not authorize
-npm or Marketplace publication.
+Release publication is Git-tag-only. Do not create GitHub Releases or publish to
+npm or Marketplace. VSIXs remain available locally and as CI artifacts.
 
-1. Update the root and both extension manifest versions together, their lockfiles,
+1. Update root and both extension manifest versions together, their lockfiles,
    and CHANGELOG.md. Review user-facing version examples.
-2. Run the checks above and inspect VSIX content, including native helpers.
+2. Run checks above for both pinned VS Code versions and inspect VSIX contents,
+   including native helpers, the dual-version plugin and exact embedded Router.
 3. Commit, create an annotated `vX.Y.Z` tag, and push the commit and tag.
-4. The release workflow validates versions, runs checks and extension-host smoke,
-   and uploads both VSIXs and SHA256SUMS to the tag's GitHub Release.
-5. Verify the workflow conclusion and released assets; do not claim publication
-   solely because the tag was pushed. A workflow failure is a delivery gap.
+4. The tag workflow validates versions, runs checks and compatibility smoke tests,
+   and retains both VSIXs and SHA256SUMS as Actions artifacts.
+5. Verify the workflow conclusion; a failed workflow remains a delivery gap.
 
-If a tag event does not start the release workflow, a manual publication may use
-the `vsix` artifact from a successful CI run of that exact tagged commit. Verify
-the tag/source SHA and artifact checksums, publish with `gh release create
---verify-tag`, then download and verify the uploaded files. Record the fallback
-and evidence in dated verification; never move an existing release tag to retry.
-
-Release assets are also available locally in `artifacts/`. Do not commit generated
-VSIXs, dependencies, test profiles, credentials or machine-specific configuration.
+Do not commit generated VSIXs, dependencies, test profiles, credentials or
+machine-specific configuration.

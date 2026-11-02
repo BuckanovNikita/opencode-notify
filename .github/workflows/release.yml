@@ -3,10 +3,16 @@ on:
   push:
     tags: ['v*']
 permissions:
-  contents: write
+  contents: read
 jobs:
   release:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        vscode: ['1.90.0', '1.143.1']
+    env:
+      VSCODE_TEST_VERSION: ${{ matrix.vscode }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,7 +27,11 @@ jobs:
       - run: npm run package
       - run: npm run test:native
       - run: xvfb-run -a npm run test:extension
-      - name: Publish VSIX release assets
+      - run: xvfb-run -a npm run test:multiwindow
+      - run: xvfb-run -a npm run test:multiwindow
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" artifacts/*.vsix artifacts/SHA256SUMS --verify-tag --title "$GITHUB_REF_NAME" --notes-file CHANGELOG.md
+          OPENCODE_NOTIFY_SMOKE_PROFILES: '1'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix-${{ matrix.vscode }}
+          path: artifacts/

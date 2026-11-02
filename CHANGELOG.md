@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0
+
+- Support OpenCode v1.18.29+ and v2 with one self-contained dual entrypoint.
+- Handle v2 execution outcomes, permissions and question forms; abort subscriptions on unload.
+- Support VS Code 1.90+ with pinned minimum API types and automatic setup preserved.
+- Exercise pinned OpenCode and VS Code compatibility matrices with isolated fixtures.
+- Publish Git version tags only; retain VSIXs as local and Actions artifacts.
+
+Existing plugin files are preserved. Use **Install or Update OpenCode Plugin**
+and restart OpenCode to activate the new adapter. Real remote-host placement and
+native desktop visual acceptance remain separate from headless smoke checks.
+
 ## 0.3.0
 
 - Require VS Code 1.143.1 or newer; discontinue the earlier 1.93 support range.

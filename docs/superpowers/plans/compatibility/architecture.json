@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "task": "OpenCode v1/v2 and VS Code 1.90+ support",
+  "scope": [
+    "packages",
+    "scripts",
+    "tests",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "AGENTS.md",
+    "package.json",
+    "package-lock.json",
+    ".github"
+  ],
+  "impact": "modules",
+  "rules": "AGENTS.md and docs/development.md: protocol is pure; adapters own effects and may share only protocol; existing import checker includes negative probes.",
+  "modules": [
+    {
+      "id": "plugin",
+      "path": "packages/plugin/src",
+      "change": "modify",
+      "responsibility": "OpenCode lifecycle, configuration and transport",
+      "interface": "Default id/server/setup; both majors emit protocol v1 with exact source identity",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "existing explicitly allowed platform dependencies"
+      ],
+      "forbidden_dependencies": [
+        "cross-adapter imports",
+        "runtime OpenCode SDK"
+      ],
+      "effects": "Owns config reads, authenticated HTTP and abortable v2 subscription",
+      "contracts": [
+        "boundaries"
+      ]
+    },
+    {
+      "id": "router",
+      "path": "packages/router/src",
+      "change": "modify",
+      "responsibility": "Workspace HTTP, source binding and plugin installation",
+      "interface": "Preserve command IDs, create-only installation and explicit confirmed update",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "existing explicitly allowed platform dependencies"
+      ],
+      "forbidden_dependencies": [
+        "cross-adapter imports",
+        "runtime OpenCode SDK"
+      ],
+      "effects": "Owns workspace filesystem, HTTP and terminal environment",
+      "contracts": [
+        "boundaries"
+      ]
+    },
+    {
+      "id": "presenter",
+      "path": "packages/presenter",
+      "change": "modify",
+      "responsibility": "Local UI and Router setup",
+      "interface": "Full setup and notification parity on VS Code 1.90+",
+      "layer": "adapter",
+      "allowed_dependencies": [
+        "protocol",
+        "existing explicitly allowed platform dependencies"
+      ],
+      "forbidden_dependencies": [
+        "cross-adapter imports",
+        "runtime OpenCode SDK"
+      ],
+      "effects": "Owns local UI, inventory queries and companion installation",
+      "contracts": [
+        "boundaries"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "id": "boundaries",
+      "path": "scripts/check-architecture.mjs",
+      "status": "existing",
+      "rules": "Pure protocol; no cross-adapter imports; only explicit Node and VS Code dependencies; negative probes reject forbidden edges.",
+      "check": "imports"
+    }
+  ],
+  "checks": [
+    {
+      "id": "imports",
+      "kind": "imports",
+      "command": "npm run check:architecture",
+      "expectation": "All production imports and injected forbidden-edge probes pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "checks",
+      "kind": "behavior",
+      "command": "npm run check",
+      "expectation": "Strict types, complete unit/integration suite, import rules and documentation checks pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "package",
+      "kind": "behavior",
+      "command": "npm run package",
+      "expectation": "Matching 0.4.0 VSIXs with exact embedded Router, self-contained dual-major plugin and native helpers",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "docs",
+      "kind": "documentation",
+      "command": "npm run check:docs",
+      "expectation": "Markdown and local documentation links pass.",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "native",
+      "kind": "behavior",
+      "command": "npm run test:native",
+      "expectation": "Three pinned actual OpenCode servers use local fixtures and emit one authenticated completion with source and title",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "audit",
+      "kind": "behavior",
+      "command": "npm audit --omit=dev",
+      "expectation": "No production vulnerabilities",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "extension-1.90.0",
+      "kind": "behavior",
+      "command": "VSCODE_TEST_VERSION=1.90.0 xvfb-run -a npm run test:extension",
+      "expectation": "Installed artifact setup, preserved versions/files and exact terminal activation pass",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "multiwindow-1.90.0",
+      "kind": "behavior",
+      "command": "VSCODE_TEST_VERSION=1.90.0 xvfb-run -a npm run test:multiwindow",
+      "expectation": "Installed artifact setup, preserved versions/files and exact terminal activation pass",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "extension-1.143.1",
+      "kind": "behavior",
+      "command": "VSCODE_TEST_VERSION=1.143.1 xvfb-run -a npm run test:extension",
+      "expectation": "Installed artifact setup, preserved versions/files and exact terminal activation pass",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    },
+    {
+      "id": "multiwindow-1.143.1",
+      "kind": "behavior",
+      "command": "VSCODE_TEST_VERSION=1.143.1 xvfb-run -a npm run test:multiwindow",
+      "expectation": "Installed artifact setup, preserved versions/files and exact terminal activation pass",
+      "result": {
+        "status": "passed",
+        "exit_code": 0,
+        "evidence": "docs/verification-2026-11-02-compatibility.md"
+      }
+    }
+  ],
+  "documentation": "Russian READMEs; English development guide, changelog, workflow and dated verification; preserve historical plans.",
+  "review": {
+    "status": "accepted",
+    "reviewer": "Fresh independent native agent final_review, with parent acceptance reconciliation",
+    "evidence": "docs/verification-2026-11-02-compatibility.md",
+    "reconciliation": "Compared all task-owned tracked and untracked changes against clean base d7bdc92: plugin runtime/new internals and tests, router text, extension manifests/types and lockfiles, native and VS Code harness, workflows and documentation. No unrelated changes. No review findings. Existing pure protocol and adapter import boundaries preserved, eight negative probes and all declared checks pass; real remote and native visual acceptance remain explicitly outside headless evidence."
+  }
+}

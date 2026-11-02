@@ -1,8 +1,7 @@
-import { basename } from 'node:path';
-import { cleanText, isRecord, type Notification, type NotificationKind } from '../../protocol/src/index.js';
-import type { PluginConfig } from './config.js';
+import { isRecord } from '../../protocol/src/index.js';
+import { createNotificationSender, type NotificationDependencies } from './notifications.js';
+export type { SessionInfo } from './notifications.js';
 
-export interface SessionInfo { id: string; title?: string; parentID?: string }
 interface Run {
   started: number;
   active: boolean;
@@ -13,22 +12,11 @@ interface Run {
   pending: Set<string>;
   userId?: string;
 }
-interface Dependencies {
-  config: PluginConfig;
-  directory: string;
-  instanceId: string;
-  terminalId?: string;
-  now(): number;
-  send(notification: Notification): Promise<void>;
-  session(id: string): Promise<SessionInfo | undefined>;
-  log(message: string): void;
-}
 
-export function createController(deps: Dependencies) {
-  const sessions = new Map<string, SessionInfo>();
+export function createController(deps: NotificationDependencies) {
+  const { notify, sessions } = createNotificationSender(deps);
   const runs = new Map<string, Run>();
   const seen = new Set<string>();
-  let counter = 0;
 
   function remember(key: string): boolean {
     if (seen.has(key)) return false;
@@ -45,34 +33,6 @@ export function createController(deps: Dependencies) {
       runs.set(id, value);
     }
     return value;
-  }
-
-  async function notify(kind: NotificationKind, id: string): Promise<void> {
-    if (!deps.config.enabled) return;
-    let info = sessions.get(id);
-    if (!info) {
-      try { info = await deps.session(id); if (info) sessions.set(id, info); }
-      catch { deps.log(`Session metadata unavailable for ${id}`); }
-    }
-    if (kind === 'complete' && info?.parentID) kind = 'subagent_complete';
-    if (!deps.config.events[kind]) return;
-    const project = cleanText(basename(deps.directory) || 'workspace', 512);
-    const sessionTitle = deps.config.showSessionTitle ? cleanText(info?.title || id, 1024) : '';
-    const labels: Record<NotificationKind, string> = {
-      complete: 'Run completed', question: 'Question needs your answer',
-      permission: 'Permission required', error: 'Agent error', subagent_complete: 'Subagent completed',
-    };
-    const notification: Notification = {
-      version: 1, id: `${deps.instanceId}:${++counter}`, event: kind, sessionId: id, instanceId: deps.instanceId,
-      project, directory: cleanText(deps.directory, 4096),
-      title: deps.config.showProjectName ? `OpenCode · ${project}` : 'OpenCode',
-      message: `${labels[kind]}${sessionTitle ? ` · ${sessionTitle}` : ''}`,
-      occurredAt: deps.now(), display: deps.config.display,
-      ...(deps.terminalId ? { terminalId: deps.terminalId } : {}),
-      ...(sessionTitle ? { sessionTitle } : {}),
-    };
-    try { await deps.send(notification); }
-    catch (error) { deps.log(`Notification delivery failed: ${error instanceof Error ? error.message : String(error)}`); }
   }
 
   async function finish(id: string, state: Run): Promise<void> {
