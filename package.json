@@ -1,6 +1,6 @@
 {
   "name": "opencode-notify",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "description": "OpenCode v1 and v2 notifications across VS Code local and remote workspaces",

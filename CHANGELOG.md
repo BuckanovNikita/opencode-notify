@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1
+
+- Share project instructions with Claude through a portable import adapter.
+- Record instruction ownership, architecture assessment and synchronization checks.
+
 ## 0.4.0
 
 - Support OpenCode v1.18.29+ and v2 with one self-contained dual entrypoint.
