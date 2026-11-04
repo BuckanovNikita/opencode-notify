@@ -17,9 +17,9 @@ WSL, Dev Containers или Remote Tunnels. Уведомления появляю
 
 ## Установка из VSIX
 
-Скачайте `opencode-notify-0.4.0.vsix` из артефактов успешного
+Скачайте `opencode-notify-0.4.1.vsix` из артефактов успешного
 [GitHub Actions](https://github.com/BuckanovNikita/opencode-notify/actions)
-для тега `v0.4.0` либо соберите через `npm run package`. Установите через **Extensions: Install from VSIX...** на локальном компьютере
+для тега `v0.4.1` либо соберите через `npm run package`. Установите через **Extensions: Install from VSIX...** на локальном компьютере
 (раздел **Local — Installed**).
 
 Откройте доверенную рабочую область локально или через SSH, WSL, Dev Containers,
@@ -47,7 +47,7 @@ Marketplace, доступ удалённого хоста к GitHub и отде�
 `opencodeNotify.autoInstallRouter: false`, плагина — через
 `opencodeNotify.autoInstallPlugin: false` на хосте рабочей области. Это не удаляет
 уже установленные компоненты. В недоверенных рабочих областях установка не запускается.
-Для ручного режима установите `opencode-notify-router-0.4.0.vsix` на хост рабочей
+Для ручного режима установите `opencode-notify-router-0.4.1.vsix` на хост рабочей
 области и выполните команду установки плагина. Повторить автонастройку Router можно
 командой **OpenCode Notify: Set Up Workspace** после включения автоустановки.
 
