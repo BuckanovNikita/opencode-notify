@@ -48,3 +48,11 @@ Reuse successful checks while their inputs remain unchanged; do not repeat full
 verification before every intermediate commit.
 
 For changes to product behavior, read [the problem and behavior specification](docs/specification.md).
+
+## Specification rewrites
+
+Compare the original behavior, conditions and exceptions with their new authoritative
+homes, including requirements embedded in scenarios. Separate approved policy changes
+from wording changes; resolve overloaded terms before editing. Retain compatibility
+obligations, remove historical status claims, and have the reviewer compare meaning
+against the original source rather than judge length or wording alone.
