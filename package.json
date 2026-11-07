@@ -11,14 +11,15 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test packages/*/test/*.test.ts tests/*.test.ts",
     "check:architecture": "node scripts/check-architecture.mjs",
-    "check:docs": "markdownlint-cli2 '**/*.md' '#node_modules' '#packages/*/node_modules' '#.vscode-test' && node scripts/check-docs.mjs",
-    "check": "npm run typecheck && npm test && npm run check:architecture && npm run check:docs",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run check:architecture",
     "build": "node scripts/build.mjs",
     "package": "npm run build && node scripts/package.mjs",
     "test:extension": "node scripts/test-extension.mjs",
     "test:native": "tsx tests/native/smoke.ts",
     "test:multiwindow": "node scripts/test-multiwindow.mjs",
-    "test:windows": "node scripts/test-windows.mjs"
+    "test:windows": "node scripts/test-windows.mjs",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
     "node-notifier": "10.0.1"
@@ -30,9 +31,13 @@
     "@vscode/test-electron": "3.1.0",
     "@vscode/vsce": "4.0.0",
     "esbuild": "0.25.12",
-    "markdownlint-cli2": "0.24.0",
     "tsx": "4.20.6",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "prettier": "3.6.2",
+    "eslint": "^9.39.0",
+    "@eslint/js": "^9.39.0",
+    "typescript-eslint": "^8.46.0",
+    "globals": "^16.4.0"
   },
   "overrides": {
     "node-notifier": {

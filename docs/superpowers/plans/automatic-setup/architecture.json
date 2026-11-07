@@ -24,14 +24,9 @@
       "interface": "Add private status command; preserve existing event protocol",
       "layer": "pure protocol",
       "allowed_dependencies": [],
-      "forbidden_dependencies": [
-        "other adapters",
-        "runtime OpenCode SDKs"
-      ],
+      "forbidden_dependencies": ["other adapters", "runtime OpenCode SDKs"],
       "effects": "None",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     },
     {
       "id": "presenter",
@@ -40,20 +35,10 @@
       "responsibility": "Local notification presentation and companion installation",
       "interface": "createRouterSetup returns skipped/ready/installed/reload-required; typed adapter supplies active status, installed inventory and VSIX installation; unknown inventory prevents installation.",
       "layer": "adapter",
-      "allowed_dependencies": [
-        "protocol",
-        "vscode",
-        "node-notifier",
-        "existing native subprocess dependencies"
-      ],
-      "forbidden_dependencies": [
-        "other adapters",
-        "runtime OpenCode SDKs"
-      ],
+      "allowed_dependencies": ["protocol", "vscode", "node-notifier", "existing native subprocess dependencies"],
+      "forbidden_dependencies": ["other adapters", "runtime OpenCode SDKs"],
       "effects": "Owns VS Code local presentation, configuration, read-only installed inventory and installation; remote inventory uses guarded core CLI command, local inventory uses VS Code filesystem reads.",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     },
     {
       "id": "router",
@@ -71,14 +56,9 @@
         "node:http",
         "node:crypto"
       ],
-      "forbidden_dependencies": [
-        "other adapters",
-        "runtime OpenCode SDKs"
-      ],
+      "forbidden_dependencies": ["other adapters", "runtime OpenCode SDKs"],
       "effects": "Workspace HTTP, environment and plugin filesystem",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     }
   ],
   "contracts": [

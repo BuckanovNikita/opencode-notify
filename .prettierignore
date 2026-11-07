@@ -1,0 +1,11 @@
+node_modules/
+**/dist/
+**/build/
+.vscode-test/
+.tools/
+.research/
+**/target/
+**/.gradle/
+**/coverage/
+**/vendor/
+**/generated/

@@ -1,7 +1,7 @@
 name: Release VSIX
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
 permissions:
   contents: read
 jobs:
@@ -10,14 +10,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        vscode: ['1.90.0', '1.143.1']
+        vscode: ["1.90.0", "1.143.1"]
     env:
       VSCODE_TEST_VERSION: ${{ matrix.vscode }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
       - name: Verify tag matches package version
         run: node -e 'const p=require("./package.json"); if (process.env.GITHUB_REF_NAME !== "v"+p.version) throw new Error("Version mismatch")'
@@ -30,7 +30,7 @@ jobs:
       - run: xvfb-run -a npm run test:multiwindow
       - run: xvfb-run -a npm run test:multiwindow
         env:
-          OPENCODE_NOTIFY_SMOKE_PROFILES: '1'
+          OPENCODE_NOTIFY_SMOKE_PROFILES: "1"
       - uses: actions/upload-artifact@v4
         with:
           name: vsix-${{ matrix.vscode }}

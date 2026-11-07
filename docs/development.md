@@ -31,7 +31,9 @@ seen. Secrets never appear in diagnostics or package artifacts.
 
 ```bash
 npm ci --ignore-scripts
-npm run check
+npm run typecheck
+npm test
+npm run check:architecture
 npm audit --omit=dev
 npm run package
 npm run test:native
@@ -174,7 +176,7 @@ npm or Marketplace. VSIXs remain available locally and as CI artifacts.
    and CHANGELOG.md. Review user-facing version examples.
 2. Run checks above for both pinned VS Code versions and inspect VSIX contents,
    including native helpers, the dual-version plugin and exact embedded Router.
-3. Commit, create an annotated `vX.Y.Z` tag, and push the commit and tag.
+3. Commit and create an annotated `vX.Y.Z` tag. Push the commit and tag only with separate push authorization.
 4. The tag workflow validates versions, runs checks and compatibility smoke tests,
    and retains both VSIXs and SHA256SUMS as Actions artifacts.
 5. Verify the workflow conclusion; a failed workflow remains a delivery gap.

@@ -23,7 +23,7 @@ concurrent changes and stage task-owned files only.
 - [x] Implement presenter peers, both mode, origin activation and Windows callbacks.
 - [x] Integrate module imports and negative probes; extend isolated host/native tests.
 - [x] Run check, package, OpenCode smoke, minimum/current extension-host tests and
-  Windows smoke; record desktop acceptance without overstating automated evidence.
+      Windows smoke; record desktop acceptance without overstating automated evidence.
 - [x] Update Russian README, English guide, changelog and dated evidence.
 - [x] Reconcile architecture and obtain fresh independent review; record blocked acceptance.
 - [ ] Pass real Windows desktop acceptance (the user removed the 1.93 gate).
@@ -60,7 +60,7 @@ on supported hosts. Continue real Windows acceptance and release preparation.
 
 - [x] Raise the host minimum to 1.143.1 and prepare matching 0.3.0 package metadata.
 - [x] Diagnose actual Windows banner/history activation with scoped desktop tests;
-  retain the failed native click checks as acceptance gaps.
+      retain the failed native click checks as acceptance gaps.
 - [x] Verify the revised support range, reconcile evidence and obtain scoped review.
 - [ ] Release only after the remaining Windows acceptance gate passes.
 

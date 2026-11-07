@@ -2,7 +2,7 @@
   "config": {
     "MD013": false,
     "MD024": { "siblings_only": true },
-    "MD060": false
+    "MD060": false,
   },
-  "ignores": ["node_modules/**", "packages/*/node_modules/**", ".vscode-test/**", "artifacts/**"]
+  "ignores": ["node_modules/**", "packages/*/node_modules/**", ".vscode-test/**", "artifacts/**"],
 }

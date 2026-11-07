@@ -1,0 +1,34 @@
+default_stages: [pre-commit]
+repos:
+  - repo: local
+    hooks:
+      - id: quality-0
+        name: npm run lint
+        entry: npm run lint
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: quality-1
+        name: npm run format:check
+        entry: npm run format:check
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: quality-2
+        name: npm run typecheck
+        entry: npm run typecheck
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: quality-3
+        name: npm test
+        entry: npm test
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: quality-4
+        name: npm run check:architecture
+        entry: npm run check:architecture
+        language: system
+        pass_filenames: false
+        always_run: true

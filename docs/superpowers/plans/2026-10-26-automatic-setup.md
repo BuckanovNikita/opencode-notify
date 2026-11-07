@@ -24,22 +24,22 @@ through the existing release workflow without further stage prompts.
 ## Tasks
 
 - [x] T1: Validate this architecture plan. Add failing setup tests for missing,
-  matching, older/newer Router versions, disabled/untrusted environments, failures
-  and concurrent calls. Add a concurrent plugin-install preservation test.
+      matching, older/newer Router versions, disabled/untrusted environments, failures
+      and concurrent calls. Add a concurrent plugin-install preservation test.
 - [x] T2: Implement presenter setup policy and VS Code adapter, a private Router
-  status command and automatic create-only plugin setup with opt-outs. Keep manual
-  recovery commands. Run tests and type checking.
+      status command and automatic create-only plugin setup with opt-outs. Keep manual
+      recovery commands. Run tests and type checking.
 - [x] T3: Package Router first and embed its VSIX in presenter. Replace hardcoded
-  plugin banner version. Change extension smoke to install only presenter and
-  verify Router, plugin and CLI are provisioned; isolate XDG config. Exercise an
-  opt-out profile and preserve a pre-existing modified plugin.
+      plugin banner version. Change extension smoke to install only presenter and
+      verify Router, plugin and CLI are provisioned; isolate XDG config. Exercise an
+      opt-out profile and preserve a pre-existing modified plugin.
 - [x] T4: Update Russian READMEs, English development guidance and changelog;
-  synchronize 0.2.0 manifests and lockfiles. Run `npm run check`,
-  `npm audit --omit=dev`, `npm run package`, `npm run test:native` and
-  `xvfb-run -a npm run test:extension`; inspect nested VSIX contents/checksums.
+      synchronize 0.2.0 manifests and lockfiles. Run `npm run check`,
+      `npm audit --omit=dev`, `npm run package`, `npm run test:native` and
+      `xvfb-run -a npm run test:extension`; inspect nested VSIX contents/checksums.
 - [x] T5: Record dated evidence, obtain fresh independent review, resolve findings,
-  reconcile the complete diff and validate architecture acceptance. Re-read the
-  commit procedure, commit, tag/push and verify authorized VSIX release assets.
+      reconcile the complete diff and validate architecture acceptance. Re-read the
+      commit procedure, commit, tag/push and verify authorized VSIX release assets.
 
 ## Review focus
 

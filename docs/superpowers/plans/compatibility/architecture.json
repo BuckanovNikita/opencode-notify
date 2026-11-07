@@ -23,18 +23,10 @@
       "responsibility": "OpenCode lifecycle, configuration and transport",
       "interface": "Default id/server/setup; both majors emit protocol v1 with exact source identity",
       "layer": "adapter",
-      "allowed_dependencies": [
-        "protocol",
-        "existing explicitly allowed platform dependencies"
-      ],
-      "forbidden_dependencies": [
-        "cross-adapter imports",
-        "runtime OpenCode SDK"
-      ],
+      "allowed_dependencies": ["protocol", "existing explicitly allowed platform dependencies"],
+      "forbidden_dependencies": ["cross-adapter imports", "runtime OpenCode SDK"],
       "effects": "Owns config reads, authenticated HTTP and abortable v2 subscription",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     },
     {
       "id": "router",
@@ -43,18 +35,10 @@
       "responsibility": "Workspace HTTP, source binding and plugin installation",
       "interface": "Preserve command IDs, create-only installation and explicit confirmed update",
       "layer": "adapter",
-      "allowed_dependencies": [
-        "protocol",
-        "existing explicitly allowed platform dependencies"
-      ],
-      "forbidden_dependencies": [
-        "cross-adapter imports",
-        "runtime OpenCode SDK"
-      ],
+      "allowed_dependencies": ["protocol", "existing explicitly allowed platform dependencies"],
+      "forbidden_dependencies": ["cross-adapter imports", "runtime OpenCode SDK"],
       "effects": "Owns workspace filesystem, HTTP and terminal environment",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     },
     {
       "id": "presenter",
@@ -63,18 +47,10 @@
       "responsibility": "Local UI and Router setup",
       "interface": "Full setup and notification parity on VS Code 1.90+",
       "layer": "adapter",
-      "allowed_dependencies": [
-        "protocol",
-        "existing explicitly allowed platform dependencies"
-      ],
-      "forbidden_dependencies": [
-        "cross-adapter imports",
-        "runtime OpenCode SDK"
-      ],
+      "allowed_dependencies": ["protocol", "existing explicitly allowed platform dependencies"],
+      "forbidden_dependencies": ["cross-adapter imports", "runtime OpenCode SDK"],
       "effects": "Owns local UI, inventory queries and companion installation",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     }
   ],
   "contracts": [

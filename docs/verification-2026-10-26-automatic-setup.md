@@ -10,18 +10,18 @@ were changed by this verification.
 
 ## Executed checks
 
-| Check | Observed outcome |
-| --- | --- |
-| Baseline `npm run check` | Passed, 32 tests before implementation |
-| New setup/concurrent-install tests before implementation | Failed: setup module absent and concurrent plugin writes raised EEXIST |
-| Presenter-only VSIX smoke before bundling | Failed: missing `dist/router.vsix` and Router not installed |
-| Presenter-only smoke after initial packaging change | Failed: VSCE default exclusions omitted the nested VSIX |
-| Initial integrated `npm run check` | Passed: 42 tests, strict TypeScript, import contracts and four negative probes, Markdown and local links |
-| `npm audit --omit=dev` | Passed: zero reported vulnerabilities |
-| `npm run package` | Passed: both 0.2.0 VSIXs and SHA256SUMS |
-| Archive inspection | Nested Router bytes equal the standalone Router VSIX; plugin, CLI and native desktop helpers present |
-| `npm run test:native` | Passed: real OpenCode v1.2.0 server events through bundled plugin and authenticated HTTP |
-| Initial `xvfb-run -a npm run test:extension` | Passed: four isolated VS Code 1.93.1 profiles, each initially installing only presenter |
+| Check                                                    | Observed outcome                                                                                         |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Baseline `npm run check`                                 | Passed, 32 tests before implementation                                                                   |
+| New setup/concurrent-install tests before implementation | Failed: setup module absent and concurrent plugin writes raised EEXIST                                   |
+| Presenter-only VSIX smoke before bundling                | Failed: missing `dist/router.vsix` and Router not installed                                              |
+| Presenter-only smoke after initial packaging change      | Failed: VSCE default exclusions omitted the nested VSIX                                                  |
+| Initial integrated `npm run check`                       | Passed: 42 tests, strict TypeScript, import contracts and four negative probes, Markdown and local links |
+| `npm audit --omit=dev`                                   | Passed: zero reported vulnerabilities                                                                    |
+| `npm run package`                                        | Passed: both 0.2.0 VSIXs and SHA256SUMS                                                                  |
+| Archive inspection                                       | Nested Router bytes equal the standalone Router VSIX; plugin, CLI and native desktop helpers present     |
+| `npm run test:native`                                    | Passed: real OpenCode v1.2.0 server events through bundled plugin and authenticated HTTP                 |
+| Initial `xvfb-run -a npm run test:extension`             | Passed: four isolated VS Code 1.93.1 profiles, each initially installing only presenter                  |
 
 The four installed-extension scenarios verify automatic Router/plugin installation,
 Router opt-out, plugin opt-out and preservation of a personal plugin. Enabled Router
@@ -122,9 +122,9 @@ The Router nested in the downloaded presenter is byte-for-byte identical to the
 downloaded standalone Router. Both manifests report 0.2.0 and the Router includes
 its standalone plugin and CLI. The release is neither draft nor prerelease.
 
-| Asset | SHA256 |
-| --- | --- |
-| `opencode-notify-0.2.0.vsix` | `c8b7208d9fd323c94d8fefa4551b3530938d373ad8c7b28db8796c3610184162` |
+| Asset                               | SHA256                                                             |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| `opencode-notify-0.2.0.vsix`        | `c8b7208d9fd323c94d8fefa4551b3530938d373ad8c7b28db8796c3610184162` |
 | `opencode-notify-router-0.2.0.vsix` | `8a7e6b0c76164b1587138fb61c7c2ff3743e437572b6fc4a73fcd15af022e8fd` |
 
 The source checkout and release artifacts are delivered. Installation into the

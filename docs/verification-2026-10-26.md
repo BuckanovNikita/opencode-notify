@@ -10,15 +10,15 @@ after the remote workflow completes.
 
 ## Executed checks
 
-| Command/check | Result |
-| --- | --- |
-| `npm run check` | Passed: strict TypeScript, 32 tests, architecture contracts and Markdown/local links |
-| `npm run check:architecture` | Passed: production graph plus four forbidden-edge negative probes |
-| `npm audit --omit=dev` | Passed: no reported production vulnerabilities |
-| `npm run package` | Passed: presenter and router VSIXs plus SHA256SUMS |
-| `npm run test:native` | Passed: real persistent OpenCode v1.2.0 server completion through the bundled plugin and real authenticated HTTP |
-| `xvfb-run -a npm run test:extension` | Passed: installed VSIXs in isolated VS Code 1.93.1 |
-| VSIX archive inspection | Passed: local/workspace host manifests, plugin/CLI bundles, SnoreToast, terminal-notifier and uuid CommonJS files present |
+| Command/check                        | Result                                                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check`                      | Passed: strict TypeScript, 32 tests, architecture contracts and Markdown/local links                                      |
+| `npm run check:architecture`         | Passed: production graph plus four forbidden-edge negative probes                                                         |
+| `npm audit --omit=dev`               | Passed: no reported production vulnerabilities                                                                            |
+| `npm run package`                    | Passed: presenter and router VSIXs plus SHA256SUMS                                                                        |
+| `npm run test:native`                | Passed: real persistent OpenCode v1.2.0 server completion through the bundled plugin and real authenticated HTTP          |
+| `xvfb-run -a npm run test:extension` | Passed: installed VSIXs in isolated VS Code 1.93.1                                                                        |
+| VSIX archive inspection              | Passed: local/workspace host manifests, plugin/CLI bundles, SnoreToast, terminal-notifier and uuid CommonJS files present |
 
 The extension-host smoke activates both installed packages, checks commands, sends
 an HTTP notification through the actual command bridge, rejects invalid payloads,
@@ -81,9 +81,9 @@ its source commit and SHA256SUMS, and published those exact files with `gh relea
 create --verify-tag`. No tag was moved and no package was published to a registry.
 The uploaded assets were downloaded again and matched the CI files byte for byte:
 
-| Asset | SHA-256 |
-| --- | --- |
-| `opencode-notify-0.1.0.vsix` | `66f2447dde9f1b4e1fae97dc066de5261d8b2982e1bdbbe246fb1d9399f856dc` |
+| Asset                               | SHA-256                                                            |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| `opencode-notify-0.1.0.vsix`        | `66f2447dde9f1b4e1fae97dc066de5261d8b2982e1bdbbe246fb1d9399f856dc` |
 | `opencode-notify-router-0.1.0.vsix` | `07d6436e930e1ce293abb39db361624f6fe16a8811e58393fb1ee03342b6600a` |
 
 The release also contains SHA256SUMS and is neither a draft nor a prerelease.

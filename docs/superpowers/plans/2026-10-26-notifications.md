@@ -38,22 +38,22 @@ needed for the already requested behavior and delivery.
 ## Tasks
 
 - [x] T1: Write failing protocol/architecture tests; implement pure wire validation,
-  strict TypeScript project and executable dependency rules. Run `npm run typecheck`,
-  `npm test`, and `npm run check:architecture` including an injected forbidden edge.
+      strict TypeScript project and executable dependency rules. Run `npm run typecheck`,
+      `npm test`, and `npm run check:architecture` including an injected forbidden edge.
 - [x] T2: Write event-sequence tests; implement v1 session state, question/permission
-  hooks, cancellation handling, configuration and timeout-bound HTTP transport.
-  Run plugin tests including repeated turns, child sessions and unavailable router.
+      hooks, cancellation handling, configuration and timeout-bound HTTP transport.
+      Run plugin tests including repeated turns, child sessions and unavailable router.
 - [x] T3: Write receiver/presentation tests; implement authenticated remote router,
-  explicit plugin install/start commands, local presenter and native fallback.
-  Verify real HTTP and no shell injection through titles or messages.
+      explicit plugin install/start commands, local presenter and native fallback.
+      Verify real HTTP and no shell injection through titles or messages.
 - [x] T4: Bundle plugin/extensions, package VSIXs, add CI and release automation,
-  Russian README, English developer docs and local documentation validation.
+      Russian README, English developer docs and local documentation validation.
 - [x] T5: Run integrated checks and isolated real extension-host smoke test; inspect
-  final archive content and record dated evidence and limitations.
+      final archive content and record dated evidence and limitations.
 - [x] T6: Obtain fresh independent review, resolve blockers, reconcile complete
-  task scope and architecture acceptance, and make a Conventional Commit.
+      task scope and architecture acceptance, and make a Conventional Commit.
 - [x] T7: Create/use authorized GitHub destination, push commit and annotated tag,
-  publish release with both VSIX assets, and verify their remote metadata/checksums.
+      publish release with both VSIX assets, and verify their remote metadata/checksums.
 
 ## Progress and decisions
 

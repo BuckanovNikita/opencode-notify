@@ -1,6 +1,6 @@
-import { isRecord } from '../../protocol/src/index.js';
-import { createNotificationSender, type NotificationDependencies } from './notifications.js';
-export type { SessionInfo } from './notifications.js';
+import { isRecord } from "../../protocol/src/index.js";
+import { createNotificationSender, type NotificationDependencies } from "./notifications.js";
+export type { SessionInfo } from "./notifications.js";
 
 interface Run {
   started: number;
@@ -21,15 +21,25 @@ export function createController(deps: NotificationDependencies) {
   function remember(key: string): boolean {
     if (seen.has(key)) return false;
     seen.add(key);
-    if (seen.size > 4096) seen.delete(seen.values().next().value!);
+    if (seen.size > 4096) {
+      const oldest = seen.values().next();
+      if (!oldest.done) seen.delete(oldest.value);
+    }
     return true;
   }
 
   function run(id: string): Run {
     let value = runs.get(id);
     if (!value) {
-      value = { started: deps.now(), active: false, idle: false, success: false,
-        failed: false, errorSent: false, pending: new Set() };
+      value = {
+        started: deps.now(),
+        active: false,
+        idle: false,
+        success: false,
+        failed: false,
+        errorSent: false,
+        pending: new Set(),
+      };
       runs.set(id, value);
     }
     return value;
@@ -39,72 +49,112 @@ export function createController(deps: NotificationDependencies) {
     if (!state.active || !state.idle || !state.success || state.failed || state.pending.size > 0) return;
     // Consume the run before awaiting IO: OpenCode v1 does not await event hooks.
     state.active = false;
-    if (deps.now() - state.started >= deps.config.minDurationMs) await notify('complete', id);
+    if (deps.now() - state.started >= deps.config.minDurationMs) await notify("complete", id);
   }
 
   async function event(value: unknown): Promise<void> {
-    if (!isRecord(value) || !isRecord(value.properties) || typeof value.type !== 'string') return;
+    if (!isRecord(value) || !isRecord(value.properties) || typeof value.type !== "string") return;
     const p = value.properties;
     const info = isRecord(p.info) ? p.info : undefined;
-    const id = typeof p.sessionID === 'string' ? p.sessionID :
-      typeof info?.sessionID === 'string' ? info.sessionID :
-      value.type.startsWith('session.') && typeof info?.id === 'string' ? info.id : undefined;
+    const id =
+      typeof p.sessionID === "string"
+        ? p.sessionID
+        : typeof info?.sessionID === "string"
+          ? info.sessionID
+          : value.type.startsWith("session.") && typeof info?.id === "string"
+            ? info.id
+            : undefined;
     if (!id) return;
-    if (value.type === 'session.deleted') { runs.delete(id); sessions.delete(id); return; }
-    if ((value.type === 'session.created' || value.type === 'session.updated') && info) {
-      sessions.set(id, { id, ...(typeof info.title === 'string' ? { title: info.title } : {}),
-        ...(typeof info.parentID === 'string' ? { parentID: info.parentID } : {}) });
+    if (value.type === "session.deleted") {
+      runs.delete(id);
+      sessions.delete(id);
+      return;
+    }
+    if ((value.type === "session.created" || value.type === "session.updated") && info) {
+      sessions.set(id, {
+        id,
+        ...(typeof info.title === "string" ? { title: info.title } : {}),
+        ...(typeof info.parentID === "string" ? { parentID: info.parentID } : {}),
+      });
       return;
     }
     const state = run(id);
     const status = isRecord(p.status) ? p.status.type : undefined;
-    if (value.type === 'session.status' && (status === 'busy' || status === 'retry')) {
+    if (value.type === "session.status" && (status === "busy" || status === "retry")) {
       if (!state.active) {
-        state.started = deps.now(); state.active = true; state.success = false;
-        state.failed = false; state.errorSent = false;
+        state.started = deps.now();
+        state.active = true;
+        state.success = false;
+        state.failed = false;
+        state.errorSent = false;
       }
       state.idle = false;
-    } else if (value.type === 'session.idle' || (value.type === 'session.status' && status === 'idle')) {
+    } else if (value.type === "session.idle" || (value.type === "session.status" && status === "idle")) {
       state.idle = true;
       await finish(id, state);
-    } else if (value.type === 'message.updated' && info?.role === 'user' && typeof info.id === 'string') {
+    } else if (value.type === "message.updated" && info?.role === "user" && typeof info.id === "string") {
       if (state.userId !== info.id) {
         state.success = false;
         state.idle = false;
         if (state.active) state.started = deps.now();
       }
       state.userId = info.id;
-    } else if (value.type === 'message.updated' && info?.role === 'assistant' && isRecord(info.time)) {
+    } else if (value.type === "message.updated" && info?.role === "assistant" && isRecord(info.time)) {
       const created = info.time.created;
       // Parent identity survives delayed event delivery and wall-clock adjustments.
       // Timestamp fallback covers sessions attached after their user message event.
-      const current = state.userId ? info.parentID === state.userId : typeof created === 'number' && created >= state.started;
+      const current = state.userId
+        ? info.parentID === state.userId
+        : typeof created === "number" && created >= state.started;
       if (current && info.error) {
-        state.failed = true; state.active = false; state.success = false; state.pending.clear();
-        const aborted = isRecord(info.error) && ['MessageAbortedError', 'AbortError'].includes(String(info.error.name));
-        if (!aborted && !state.errorSent) { state.errorSent = true; await notify('error', id); }
-      } else if (state.active && current && info.summary !== true &&
-          typeof info.time.completed === 'number' && !info.error && typeof info.finish === 'string' &&
-          (info.structured !== undefined || (info.finish !== 'tool-calls' && info.finish !== 'unknown')) && typeof info.id === 'string' &&
-          remember(`${id}:assistant:${info.id}`)) {
+        state.failed = true;
+        state.active = false;
+        state.success = false;
+        state.pending.clear();
+        const aborted = isRecord(info.error) && ["MessageAbortedError", "AbortError"].includes(String(info.error.name));
+        if (!aborted && !state.errorSent) {
+          state.errorSent = true;
+          await notify("error", id);
+        }
+      } else if (
+        state.active &&
+        current &&
+        info.summary !== true &&
+        typeof info.time.completed === "number" &&
+        !info.error &&
+        typeof info.finish === "string" &&
+        (info.structured !== undefined || (info.finish !== "tool-calls" && info.finish !== "unknown")) &&
+        typeof info.id === "string" &&
+        remember(`${id}:assistant:${info.id}`)
+      ) {
         state.success = true;
         await finish(id, state);
       }
-    } else if (value.type === 'question.asked' || value.type === 'permission.asked' || value.type === 'permission.updated') {
-      const kind = value.type === 'question.asked' ? 'question' : 'permission';
-      const request = typeof p.id === 'string' ? p.id : undefined;
+    } else if (
+      value.type === "question.asked" ||
+      value.type === "permission.asked" ||
+      value.type === "permission.updated"
+    ) {
+      const kind = value.type === "question.asked" ? "question" : "permission";
+      const request = typeof p.id === "string" ? p.id : undefined;
       if (!request) return;
       const key = `${kind}:${request}`;
       state.pending.add(key);
       if (remember(`${id}:${key}`)) await notify(kind, id);
-    } else if (['question.replied', 'question.rejected', 'permission.replied'].includes(value.type)) {
+    } else if (["question.replied", "question.rejected", "permission.replied"].includes(value.type)) {
       const request = p.requestID ?? p.permissionID ?? p.id;
-      if (typeof request === 'string') state.pending.delete(`${value.type.startsWith('question.') ? 'question' : 'permission'}:${request}`);
+      if (typeof request === "string")
+        state.pending.delete(`${value.type.startsWith("question.") ? "question" : "permission"}:${request}`);
       // Wait for the run's own next idle/final-message signal, not a human reply.
-    } else if (value.type === 'session.error') {
-      state.failed = true; state.active = false; state.pending.clear();
-      const aborted = isRecord(p.error) && ['MessageAbortedError', 'AbortError'].includes(String(p.error.name));
-      if (!aborted && !state.errorSent) { state.errorSent = true; await notify('error', id); }
+    } else if (value.type === "session.error") {
+      state.failed = true;
+      state.active = false;
+      state.pending.clear();
+      const aborted = isRecord(p.error) && ["MessageAbortedError", "AbortError"].includes(String(p.error.name));
+      if (!aborted && !state.errorSent) {
+        state.errorSent = true;
+        await notify("error", id);
+      }
     }
   }
   return { event };

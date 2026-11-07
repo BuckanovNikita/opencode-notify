@@ -1,16 +1,7 @@
 {
   "schema_version": 1,
   "task": "Visible notifications and exact console focus",
-  "scope": [
-    "packages",
-    "scripts",
-    "tests",
-    "docs",
-    "README.md",
-    "CHANGELOG.md",
-    "package.json",
-    "package-lock.json"
-  ],
+  "scope": ["packages", "scripts", "tests", "docs", "README.md", "CHANGELOG.md", "package.json", "package-lock.json"],
   "impact": "modules",
   "rules": "AGENTS.md and docs/development.md: protocol is pure; adapters own effects and may share only protocol; existing import checker includes negative probes.",
   "modules": [
@@ -22,14 +13,9 @@
       "interface": "Backward-compatible notifications plus validated source registration, peer relay and opaque activation contracts. Validated legacy presenter focus hints preserve explicit terminal-ID compatibility.",
       "layer": "pure protocol",
       "allowed_dependencies": [],
-      "forbidden_dependencies": [
-        "other adapters",
-        "runtime OpenCode SDKs"
-      ],
+      "forbidden_dependencies": ["other adapters", "runtime OpenCode SDKs"],
       "effects": "None",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     },
     {
       "id": "presenter",
@@ -50,14 +36,9 @@
         "node:http",
         "node:net"
       ],
-      "forbidden_dependencies": [
-        "other adapters",
-        "runtime OpenCode SDKs"
-      ],
+      "forbidden_dependencies": ["other adapters", "runtime OpenCode SDKs"],
       "effects": "Local loopback IPC, private discovery files, named pipe callbacks, native subprocesses and VS Code window/UI activation; preserve setup ownership.",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     },
     {
       "id": "router",
@@ -77,14 +58,9 @@
         "node:child_process",
         "node:util"
       ],
-      "forbidden_dependencies": [
-        "other adapters",
-        "runtime OpenCode SDKs"
-      ],
+      "forbidden_dependencies": ["other adapters", "runtime OpenCode SDKs"],
       "effects": "Workspace process metadata inspection, authenticated HTTP, terminal lifecycle/focus and existing plugin installation.",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     },
     {
       "id": "plugin",
@@ -93,21 +69,10 @@
       "responsibility": "OpenCode v1 events and bounded notification/source transport",
       "interface": "Register random instance identity with process start metadata at startup; include optional identity/session labels; retain existing completion semantics and nonfatal transport failures.",
       "layer": "adapter",
-      "allowed_dependencies": [
-        "protocol",
-        "node:crypto",
-        "node:fs/promises",
-        "node:os",
-        "node:path"
-      ],
-      "forbidden_dependencies": [
-        "other adapters",
-        "runtime OpenCode SDKs"
-      ],
+      "allowed_dependencies": ["protocol", "node:crypto", "node:fs/promises", "node:os", "node:path"],
+      "forbidden_dependencies": ["other adapters", "runtime OpenCode SDKs"],
       "effects": "Reads plugin configuration and process identity; bounded authenticated loopback HTTP; diagnostic logging.",
-      "contracts": [
-        "boundaries"
-      ]
+      "contracts": ["boundaries"]
     }
   ],
   "contracts": [
