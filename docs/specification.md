@@ -88,24 +88,8 @@ protocol v1 compatibility including payloads without source identity. Treat text
 data. No durable delivery queue or delivery after window/connection closure is
 promised. Packaging embeds exact checksummed Router bytes and required native helpers.
 
-## Acceptance scenarios
+## Delivery limits
 
-1. Completion, cancellation, child sessions, rapid duplicate events and human-input
-   requests produce the configured outcomes under both OpenCode lifecycle adapters.
-2. Malformed/oversized payloads, invalid credentials and transport failures are
-   rejected safely; independent windows cannot acquire each other's credentials.
-3. Starting with only the presenter in an isolated profile installs both companions;
-   repeat setup, opt-outs, untrusted workspaces, newer/disabled Router copies and
-   competing or modified plugin files preserve the stated safety boundaries.
-4. With two same-directory terminals and multiple windows/profiles, actions return
-   to the verified source, survive process exit and banner dismissal, and report
-   unavailable closed sources without guessing.
-5. Exercise focus changes, no focused window, disabled events and native failure;
-   verify no duplicate native or accepted app alerts.
-6. Check real supported OpenCode runtimes, installed VSIX compatibility, import
-   boundaries and packaged contents using the development guide. Actual remote host
-   placement, Windows foreground and Notification Center behavior, and visual desktop
-   delivery require separate live evidence; mocks or headless tests cannot establish them.
-
-Release and operational procedures remain in the development guide. Requirements
-are acceptance targets, not assertions that any deployment or test has succeeded.
+A desktop helper reporting success does not establish visible delivery. Remote host
+placement and Windows foreground/Notification Center behavior depend on the host.
+Release and platform operation belong to the [development guide](development.md).
