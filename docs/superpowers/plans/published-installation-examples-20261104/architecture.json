@@ -1,7 +1,0 @@
-{
-  "schema_version": 1,
-  "task": "Align installation examples with published v0.4.1 artifacts",
-  "scope": ["README.md", "docs/superpowers/plans/published-installation-examples-20261104"],
-  "impact": "none",
-  "rationale": "Inspected README installation examples, all three current manifest versions, development release guidance and published v0.4.1 Actions artifacts. Only documentation version references and task evidence change; existing v0.4.1 artifact names and tag already exist. No runtime module, import contract, dependency, composition target, executable check or product version changes."
-}

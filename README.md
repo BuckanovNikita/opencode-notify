@@ -193,8 +193,4 @@ xvfb-run -a npm run test:extension
 
 VSIX-файлы и контрольные суммы находятся в `artifacts/`; автономный плагин —
 в `dist/opencode-notify.js`. Подробности: [development guide](docs/development.md),
-[design](docs/superpowers/specs/2026-10-26-notifications-design.md),
-[implementation plan](docs/superpowers/plans/2026-10-26-notifications.md).
-Автонастройка описана в [дополнении к дизайну](docs/superpowers/specs/2026-10-26-automatic-setup-design.md).
-
-Новый режим показа и определение консоли описаны в [дизайне](docs/superpowers/specs/2026-10-26-visible-focus-design.md).
+[спецификация поведения](docs/specification.md).

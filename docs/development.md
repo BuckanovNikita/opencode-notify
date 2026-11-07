@@ -167,7 +167,8 @@ Store observed counts and platform outcomes in dated evidence, not this guide.
 
 Review the entire task diff, run applicable checks and obtain fresh independent
 review for substantive changes. Stage task-owned paths and use Conventional Commits.
-The architecture record and plan must match implementation and executed evidence.
+The [behavior specification](specification.md) defines product acceptance; record
+executed checks separately from requirements.
 
 Release publication is Git-tag-only. Do not create GitHub Releases or publish to
 npm or Marketplace. VSIXs remain available locally and as CI artifacts.

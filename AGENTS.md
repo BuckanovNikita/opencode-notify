@@ -46,3 +46,5 @@ release gates. Inspect auto-fixes and commit mechanical changes separately, then
 repeat affected verification until the final committed content passes without changes.
 Reuse successful checks while their inputs remain unchanged; do not repeat full
 verification before every intermediate commit.
+
+For changes to product behavior, read [the problem and behavior specification](docs/specification.md).
