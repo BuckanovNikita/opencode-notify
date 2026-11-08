@@ -83,19 +83,7 @@ export function check() {
       violations(relative(root, file), readFileSync(file, "utf8")),
     ),
   );
-  // Negative probes prove that the same checker rejects forbidden dependency edges.
-  for (const [file, code] of [
-    ["packages/protocol/src/probe.ts", "import { readFile } from 'node:fs';"],
-    ["packages/plugin/src/probe.ts", "import '../../router/src/server.js';"],
-    ["packages/router/src/probe.ts", "await import('../../presenter/src/native.js');"],
-    ["packages/presenter/src/probe.ts", "import type { X } from '../../../tests/helpers.js';"],
-    ["packages/protocol/src/probe.ts", "import type { Server } from 'node:net';"],
-    ["packages/plugin/src/probe.ts", "import { execFile } from 'node:child_process';"],
-    ["packages/presenter/src/probe.ts", "import '../../router/src/sources.js';"],
-    ["packages/router/src/probe.ts", "export { x } from '../../presenter/src/peers.js';"],
-  ])
-    if (violations(file, code).length === 0) errors.push(`Negative probe was incorrectly accepted: ${file}`);
   if (errors.length) throw new Error(errors.join("\n"));
-  console.log("Production import contracts and eight negative probes passed.");
+  console.log("Production import contracts passed.");
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) check();

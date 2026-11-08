@@ -9,7 +9,7 @@ runtimes; neither OpenCode SDK is a runtime dependency.
 Production modules live under `packages/{protocol,plugin,router,presenter}/src`.
 Only protocol may be shared between adapters. Protocol cannot import Node, VS Code
 or third-party packages. `scripts/check-architecture.mjs` checks static, type-only,
-re-export, require and dynamic import edges, with negative probes. It is the
+re-export, require and dynamic import edges. It is the
 authoritative boundary record: declare a new dependency there, and update the
 [behavior specification](specification.md) if public behavior changes.
 
