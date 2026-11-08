@@ -1,34 +1,53 @@
-default_stages: [pre-commit]
+default_stages:
+- pre-commit
 repos:
-  - repo: local
-    hooks:
-      - id: quality-0
-        name: npm run lint
-        entry: npm run lint
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: quality-1
-        name: npm run format:check
-        entry: npm run format:check
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: quality-2
-        name: npm run typecheck
-        entry: npm run typecheck
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: quality-3
-        name: npm test
-        entry: npm test
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: quality-4
-        name: npm run check:architecture
-        entry: npm run check:architecture
-        language: system
-        pass_filenames: false
-        always_run: true
+- repo: local
+  hooks:
+  - id: quality-0
+    name: npm run lint
+    entry: npx --no-install eslint --max-warnings 0 --no-warn-ignored
+    language: system
+    pass_filenames: true
+    files: \.(?:[cm]?[jt]sx?|json)$
+  - id: quality-1
+    name: npm run format:check
+    entry: npx --no-install prettier --check --ignore-unknown
+    language: system
+    pass_filenames: true
+    files: \.(?:[cm]?[jt]sx?|json|ya?ml|md|html|css|scss)$
+  - id: quality-2
+    name: npm run typecheck
+    entry: npm run typecheck
+    language: system
+    pass_filenames: false
+    include_deleted: true
+    files: ^(packages/|tests/|scripts/|.*(?:config|rc).*|package(?:-lock)?\.json$)
+  - id: quality-3
+    name: npm test
+    entry: npm test
+    language: system
+    pass_filenames: false
+    include_deleted: true
+    files: ^(packages/|tests/|scripts/|.*(?:config|rc).*|package(?:-lock)?\.json$)
+  - id: quality-4
+    name: npm run check:architecture
+    entry: npm run check:architecture
+    language: system
+    pass_filenames: false
+    include_deleted: true
+    files: ^(packages/|tests/|scripts/|.*(?:config|rc).*|package(?:-lock)?\.json$)
+  - id: quality-0-config
+    name: npm run lint (configuration changed)
+    entry: npx --no-install eslint --max-warnings 0 --no-warn-ignored .
+    language: system
+    pass_filenames: false
+    files: ^(package(?:-lock)?\.json|eslint\.config\..*|\.prettier.*|\.pre-commit-config\.yaml)$
+    include_deleted: true
+  - id: quality-1-config
+    name: npm run format:check (configuration changed)
+    entry: npx --no-install prettier --check --ignore-unknown .
+    language: system
+    pass_filenames: false
+    files: ^(package(?:-lock)?\.json|eslint\.config\..*|\.prettier.*|\.pre-commit-config\.yaml)$
+    include_deleted: true
+minimum_prek_version: 0.5.10
