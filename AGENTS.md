@@ -19,8 +19,8 @@ OpenCode or manual acceptance checks, and before any release.
   third-party packages).
 - Among production modules, an adapter may import only its own `src` and protocol.
   External imports are limited to the per-module lists declared in
-  `scripts/check-architecture.mjs`; add one only after updating the design and that
-  checker. Effects belong to their owning adapter.
+  `scripts/check-architecture.mjs`, which is the authoritative boundary record; add one
+  there, and update docs/specification.md if public behavior changes. Effects belong to their owning adapter.
 - `npm run check:architecture` enforces these import contracts.
 - Keep runtime SDK dependencies out of the self-contained OpenCode plugin.
 

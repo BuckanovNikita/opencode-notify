@@ -9,8 +9,9 @@ runtimes; neither OpenCode SDK is a runtime dependency.
 Production modules live under `packages/{protocol,plugin,router,presenter}/src`.
 Only protocol may be shared between adapters. Protocol cannot import Node, VS Code
 or third-party packages. `scripts/check-architecture.mjs` checks static, type-only,
-re-export, require and dynamic import edges, with negative probes. Add a declared
-dependency only after updating the design and relevant executable boundary.
+re-export, require and dynamic import edges, with negative probes. It is the
+authoritative boundary record: declare a new dependency there, and update the
+[behavior specification](specification.md) if public behavior changes.
 
 The plugin emits completion only after both successful final assistant evidence
 and idle for the active run. It supports the two v1 permission event schemas and
@@ -161,7 +162,8 @@ Windows/macOS/Linux visual notification behavior. Record those separately:
    Inputs are staged in local temporary storage so Electron does not need UNC
    security exceptions. Native mode `center` is diagnostic only.
 
-Store observed counts and platform outcomes in dated evidence, not this guide.
+Record observed counts and platform outcomes, with dates, in the task's review record
+(such as the pull request description), not this guide.
 
 ## Commit and release
 
