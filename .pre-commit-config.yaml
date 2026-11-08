@@ -41,7 +41,7 @@ repos:
         entry: npx --no-install eslint --max-warnings 0 --no-warn-ignored .
         language: system
         pass_filenames: false
-        files: ^(package(?:-lock)?\.json|eslint\.config\..*|\.prettier.*|\.pre-commit-config\.yaml)$
+        files: ^(package(?:-lock)?\.json|eslint\.config\..*|eslint-core\.mjs|\.prettier.*|\.pre-commit-config\.yaml)$
         include_deleted: true
       - id: quality-1-config
         name: npm run format:check (configuration changed)
