@@ -162,8 +162,8 @@ Windows/macOS/Linux visual notification behavior. Record those separately:
    Inputs are staged in local temporary storage so Electron does not need UNC
    security exceptions. Native mode `center` is diagnostic only.
 
-Record observed counts and platform outcomes, with dates, in the task's review record
-(such as the pull request description), not this guide.
+Report observed counts and platform outcomes, with dates, with the task rather than
+in this guide.
 
 ## Commit and release
 
