@@ -9,7 +9,7 @@ Linear is private and this repository is public: PR descriptions, commit message
 ## Conventions
 
 - **Ticket**: one Linear issue. Its description records the outcome, scope, an implementation plan where needed, acceptance criteria as a checklist, and the selected verification.
-- **Feature**: a parent issue whose description is the spec, with its tickets as sub-issues.
+- **Feature**: a parent issue whose description is the change spec, with its tickets as sub-issues; product behavior stays in [the behavior specification](../specification.md) and is updated there.
 - **Blocking**: Linear's native blocked-by relation.
 - **State**: one lifecycle state (Triage, Backlog, Todo, In Progress, In Review, Done, Canceled, Duplicate) and one readiness label ([triage labels](triage-labels.md)). An issue awaiting triage sits in Triage with `needs-triage`. A ready label does not override an open blocker.
 - **Discussion**: Linear comments on the issue.
@@ -29,7 +29,7 @@ Move an issue to In Progress when work starts and to In Review when the implemen
 ## Delivery
 
 - **Branch and PR**: one task branch and one PR against `main` for a cohesive change, with several tickets in it when they belong together. Name the issue identifier in the branch and in the PR title, and list every included issue by its identifier in the PR description. A draft PR may hold incomplete work.
-- **Who does what**: agents commit task-owned work with Conventional Commits, push task branches to `origin` and open PRs. Humans merge. `main` changes only through a human-merged PR: an agent session never pushes `main` and never delivers by merging into it locally. Explicit session limits take precedence.
+- **Who does what**: agents commit task-owned work with Conventional Commits, push task branches to `origin` and open PRs. Humans merge. `main` changes only through a human-merged PR, except for the release procedure below, which keeps its own authorization: an agent session never pushes `main` otherwise and never delivers by merging into it locally. Explicit session limits take precedence.
 - **Checks**: the [verification entrypoint](../../AGENTS.md#verification-entrypoint) passes on the branch before its PR is marked ready for review. The `CI` workflow also runs on pull requests.
 - **Review**: changes to behavior, interfaces, dependencies, security or operational policy get a fresh independent review, by a reviewer who did not write the change, after integrated verification and before the PR is marked ready for review. The human merge is a separate step. Wording edits may be self-reviewed.
 - **Release**: the [commit and release procedure](../development.md#commit-and-release) is unchanged and keeps its own authorization.
