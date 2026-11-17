@@ -32,6 +32,13 @@ OpenCode or manual acceptance checks, and before any release.
 - Follow "Commit and release" in `docs/development.md` for version bumps, the annotated
   `vX.Y.Z` tag and workflow verification.
 
+## Issue tracker and delivery
+
+Active issues and plans live in Linear (team `SIP`, project `opencode-notify`). Delivery is a
+GitHub PR from a task branch: agents push the branch and open the PR, humans merge. Read
+[the tracker guidance](docs/agents/issue-tracker.md) before planning, picking up or delivering
+work. Readiness labels are in [triage labels](docs/agents/triage-labels.md).
+
 ## Verification entrypoint
 
 Run `prek run --all-files` for the configured local checks. The hook configuration
