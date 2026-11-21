@@ -192,5 +192,5 @@ xvfb-run -a npm run test:extension
 ```
 
 VSIX-файлы и контрольные суммы находятся в `artifacts/`; автономный плагин —
-в `dist/opencode-notify.js`. Подробности: [development guide](docs/development.md),
-[спецификация поведения](docs/specification.md).
+в `dist/opencode-notify.js`. Подробности: [инструкции для разработки](AGENTS.md),
+[справочник и спецификация поведения](DOCS.md).
